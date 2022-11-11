@@ -10,8 +10,37 @@ class Api_ctrl extends CI_Controller
 		return;
 	}
 
+	private function ismod(){
+		$this->load->library('session');
+		if(!$this->session->has_userdata('mod')){
+			$result['error'] = "Permission Denied.";
+			$this->response($result);
+			return false;
+		}else{
+			return true;
+		}
+	}
+
+	private function issuper(){
+		$this->load->library('session');
+		if($this->ismod()){
+			$this->load->model("Admin_model");
+			$session = $this->session->userdata('mod');
+			$admin = $this->Admin_model->read(['admin_id'=>$session['admin_id']])[0];
+			if(! $admin['superadmin']===1){
+				$result['error'] = "Permission Denied.";
+				$this->response($result);
+				return;
+			}else{
+				return true;
+			}
+		}
+	}
+
 	public function api($method, $path){
 		try {
+			$this->load->library('session');
+
 			$result = [
 				"status" => "error",
 				"error" => "",
@@ -20,6 +49,8 @@ class Api_ctrl extends CI_Controller
 
 			$post = $this->input->post(NULL, TRUE);
 			$get = $this->input->get(NULL, TRUE);
+
+			// print_r($post);exit;
 
 			$readlimit = 99;
 			if(isset($get['limit'])){
@@ -33,26 +64,28 @@ class Api_ctrl extends CI_Controller
 			}
 			// api
 			switch ($path) {
-				case "branch":
-					$this->load->model("Branch_model");
+				case "booking":
+					$this->load->model("Booking_model");
 					if ($method == "create") {
+						$post['created_time']=time();
 						$result['status'] = "ok";
-						$result['result'] = $this->Branch_model->create(json_decode($post['create'],1));
+						$result['result'] = $this->Booking_model->create($post['create']);
 						$this->response($result);
 					} else if ($method == "read") {
-						if(!isset($get["is_deleted"])){$get["is_deleted"] = 0;}
+						// if(!$this->ismod()){return;};
 						$result['status'] = "ok";
 						$result['error'] = "";
-						$result['result'] = $this->Branch_model->read($get, $readlimit);
+						$result['result'] = $this->Booking_model->read($get, $readlimit);
 						$this->response($result);
 					} else if ($method == "update") {
+						if(!$this->ismod()){return;};
 						$result['status'] = "ok";
-						$result['result'] = $this->Branch_model->update(json_decode($post['update_where'],1), json_decode($post['update'],1));
+						$result['result'] = $this->Booking_model->update($post['update_where'], $post['update']);
 						$this->response($result);
-					} else if ($method == "delete") {
-						$result['status'] = "ok";
-						$result['result'] = $this->Branch_model->soft_delete(json_decode($post['delete'],1));
-						$this->response($result);
+					// } else if ($method == "delete") {
+					// 	$result['status'] = "ok";
+					// 	$result['result'] = $this->Booking_model->soft_delete($post['delete']);
+					// 	$this->response($result);
 					} else {
 						$result['error'] = "Invalid Method.";
 						$this->response($result);
@@ -61,8 +94,9 @@ class Api_ctrl extends CI_Controller
 				case "menu":
 					$this->load->model("Menu_model");
 					if ($method == "create") {
+						if(!$this->issuper()){return;};
 						$result['status'] = "ok";
-						$result['result'] = $this->Menu_model->create(json_decode($post['create'],1));
+						$result['result'] = $this->Menu_model->create($post['create']);
 						$this->response($result);
 					} else if ($method == "read") {
 						if(!isset($get["is_deleted"])){$get["is_deleted"] = 0;}
@@ -71,37 +105,43 @@ class Api_ctrl extends CI_Controller
 						$result['result'] = $this->Menu_model->read($get, $readlimit);
 						$this->response($result);
 					} else if ($method == "update") {
+						if(!$this->issuper()){return;};
 						$result['status'] = "ok";
-						$result['result'] = $this->Menu_model->update(json_decode($post['update_where'],1), json_decode($post['update'],1));
+						$result['result'] = $this->Menu_model->update($post['update_where'], $post['update']);
 						$this->response($result);
 					} else if ($method == "delete") {
+						if(!$this->issuper()){return;};
 						$result['status'] = "ok";
-						$result['result'] = $this->Menu_model->soft_delete(json_decode($post['delete'],1));
+						$result['result'] = $this->Menu_model->soft_delete($post['delete']);
 						$this->response($result);
 					} else {
 						$result['error'] = "Invalid Method.";
 						$this->response($result);
-					}
+					};
 					break;
-				case "booking":
-					$this->load->model("Booking_model");
+				case "branch":
+					$this->load->model("Branch_model");
 					if ($method == "create") {
+						if(!$this->issuper()){return;};
 						$result['status'] = "ok";
-						$result['result'] = $this->Booking_model->create(json_decode($post['create'],1));
+						$result['result'] = $this->Branch_model->create($post['create']);
 						$this->response($result);
 					} else if ($method == "read") {
+						if(!isset($get["is_deleted"])){$get["is_deleted"] = 0;}
 						$result['status'] = "ok";
 						$result['error'] = "";
-						$result['result'] = $this->Booking_model->read($get, $readlimit);
+						$result['result'] = $this->Branch_model->read($get, $readlimit);
 						$this->response($result);
 					} else if ($method == "update") {
+						if(!$this->issuper()){return;};
 						$result['status'] = "ok";
-						$result['result'] = $this->Booking_model->update(json_decode($post['update_where'],1), json_decode($post['update'],1));
+						$result['result'] = $this->Branch_model->update($post['update_where'], $post['update']);
 						$this->response($result);
-					// } else if ($method == "delete") {
-					// 	$result['status'] = "ok";
-					// 	$result['result'] = $this->Booking_model->soft_delete(json_decode($post['delete'],1));
-					// 	$this->response($result);
+					} else if ($method == "delete") {
+						if(!$this->issuper()){return;};
+						$result['status'] = "ok";
+						$result['result'] = $this->Branch_model->soft_delete($post['delete']);
+						$this->response($result);
 					} else {
 						$result['error'] = "Invalid Method.";
 						$this->response($result);
@@ -111,7 +151,7 @@ class Api_ctrl extends CI_Controller
 					$this->load->model("About_model");
 					// if ($method == "create") {
 					// 	$result['status'] = "ok";
-					// 	$result['result'] = $this->About_model->create(json_decode($post['create'],1));
+					// 	$result['result'] = $this->About_model->create($post['create']);
 					// 	$this->response($result);
 					// } else 
 					if ($method == "read") {
@@ -120,23 +160,26 @@ class Api_ctrl extends CI_Controller
 						$result['result'] = $this->About_model->read($get, $readlimit);
 						$this->response($result);
 					} else if ($method == "update") {
+						if(!$this->issuper()){return;};
 						$result['status'] = "ok";
-						$result['result'] = $this->About_model->update(json_decode($post['update_where'],1), json_decode($post['update'],1));
+						$result['result'] = $this->About_model->update($post['update_where'], $post['update']);
 						$this->response($result);
 					// } else if ($method == "delete") {
 					// 	$result['status'] = "ok";
-					// 	$result['result'] = $this->About_model->soft_delete(json_decode($post['delete'],1));
+					// 	$result['result'] = $this->About_model->soft_delete($post['delete']);
 					// 	$this->response($result);
 					} else {
 						$result['error'] = "Invalid Method.";
 						$this->response($result);
-					}
+					};
 					break;
 				case "admin":
 					$this->load->model("Admin_model");
+					if(!$this->issuper()){return;};
+					
 					if ($method == "create") {
 						$result['status'] = "ok";
-						$result['result'] = $this->Admin_model->create(json_decode($post['create'],1));
+						$result['result'] = $this->Admin_model->create($post['create']);
 						$this->response($result);
 					} else if ($method == "read") {
 						$result['status'] = "ok";
@@ -145,16 +188,16 @@ class Api_ctrl extends CI_Controller
 						$this->response($result);
 					} else if ($method == "update") {
 						$result['status'] = "ok";
-						$result['result'] = $this->Admin_model->update(json_decode($post['update_where'],1), json_decode($post['update'],1));
+						$result['result'] = $this->Admin_model->update($post['update_where'], $post['update']);
 						$this->response($result);
-					// } else if ($method == "delete") {
-					// 	$result['status'] = "ok";
-					// 	$result['result'] = $this->Admin_model->soft_delete(json_decode($post['delete'],1));
-					// 	$this->response($result);
+					} else if ($method == "delete") {
+						$result['status'] = "ok";
+						$result['result'] = $this->Admin_model->soft_delete($post['delete']);
+						$this->response($result);
 					} else {
 						$result['error'] = "Invalid Method.";
 						$this->response($result);
-					}
+					};
 					break;
 				default:
 					$result['error'] = "unvalid path.";
