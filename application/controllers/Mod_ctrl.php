@@ -39,6 +39,42 @@ class Mod_ctrl extends CI_Controller
 		}
 	}
 
+	public function element(){
+		$this->load->library('session');
+		$path = $this->input->get('path',TRUE);
+		if($this->session->has_userdata('mod')){
+			$this->load->model("Admin_model");
+			$session = $this->session->userdata('mod');
+			$admin = $this->Admin_model->read(['admin_id'=>$session['admin_id']])[0];
+			$dat = ['admin'=>$admin];
+
+			switch($path){
+				case"booking":
+					$this->load->view('element/booking',['admin'=>$admin]);
+					break;
+				case"menu":
+					$this->load->view('element/menu',['admin'=>$admin]);
+					break;
+				case"branch":
+					$this->load->view('element/branch',['admin'=>$admin]);
+					break;
+				case"about":
+					$about=$this->db->get('about')->row_array();
+					$this->load->view('element/about',['admin'=>$admin,"about"=>$about]);
+					break;
+				case"admin":
+					$this->load->view('element/admin',['admin'=>$admin]);
+					break;
+				default:
+					echo "404 Not Found.";
+					break;
+			}
+		}else{
+			echo "Invalid Permission";
+			return;
+		}
+	}
+
 	public function logout(){
 		$this->load->library('session');
 		if($this->session->has_userdata('mod')){

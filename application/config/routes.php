@@ -12,6 +12,7 @@ $route['translate_uri_dashes'] = FALSE;
 $route['login'] = "Mod_ctrl/login";
 $route['loginverify'] = "Mod_ctrl/loginverify";
 $route['dashboard'] = "Mod_ctrl/dashboard";
+$route['element'] = "Mod_ctrl/element";
 $route['booking'] = "Mod_ctrl/booking";
 $route['logout'] = "Mod_ctrl/logout";
 
