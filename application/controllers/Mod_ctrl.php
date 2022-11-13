@@ -19,7 +19,7 @@ class Mod_ctrl extends CI_Controller
 			$this->session->set_userdata('mod',['admin_id'=>intval($valid_admin[0]['admin_id'])]);
 			header('Location: '.base_url('dashboard'));
 		}else{
-			header('Location: '.base_url('login?x=Unvalid User.'));
+			header('Location: '.base_url('?x=Unvalid User.'));
 		}
 	
 	}
@@ -35,7 +35,7 @@ class Mod_ctrl extends CI_Controller
 			$this->load->view('head',['title'=>'dashboard']);
 			$this->load->view('dashboard',['admin'=>$admin]);
 		}else{
-			header('Location: '.base_url('login?x=Session Expired.'));
+			header('Location: '.base_url('?x=Session Expired.'));
 		}
 	}
 
@@ -79,9 +79,9 @@ class Mod_ctrl extends CI_Controller
 		$this->load->library('session');
 		if($this->session->has_userdata('mod')){
 			$this->session->unset_userdata('mod');
-			header('Location: '.base_url('login'));
+			header('Location: '.base_url());
 		}else{
-			header('Location: '.base_url('login'));
+			header('Location: '.base_url());
 		}
 	}
 }

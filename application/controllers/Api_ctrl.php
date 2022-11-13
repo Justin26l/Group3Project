@@ -51,6 +51,7 @@ class Api_ctrl extends CI_Controller
 			if( isset($_SERVER["CONTENT_TYPE"]) && $_SERVER["CONTENT_TYPE"]=="application/json"){
 				$_POST = json_decode(file_get_contents("php://input"),1);
 			};
+			
 			// catch all input
 			$post = $this->input->post(NULL, TRUE);
 			$get = $this->input->get(NULL, TRUE);
