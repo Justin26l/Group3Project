@@ -47,21 +47,26 @@ class Api_ctrl extends CI_Controller
 				"result" => "",
 			];
 
+			// catch json post
+			if( isset($_SERVER["CONTENT_TYPE"]) && $_SERVER["CONTENT_TYPE"]=="application/json"){
+				$_POST = json_decode(file_get_contents("php://input"),1);
+			};
+			// catch all input
 			$post = $this->input->post(NULL, TRUE);
 			$get = $this->input->get(NULL, TRUE);
 
-			// print_r($post);exit;
-
+			// format if client ask for limit
 			$readlimit = 99;
 			if(isset($get['limit'])){
 				$readlimit = $get["limit"];
 				unset($get["limit"]);
-			}
+			};
 
-
+			// prepair error code , not use now
 			if (empty($post)) {
 				$result['error'] = "Post Fields Is Empty.";
-			}
+			};
+
 			// api
 			switch ($path) {
 				case "booking":
@@ -89,7 +94,7 @@ class Api_ctrl extends CI_Controller
 					} else {
 						$result['error'] = "Invalid Method.";
 						$this->response($result);
-					}
+					};
 					break;
 				case "menu":
 					$this->load->model("Menu_model");
@@ -145,7 +150,7 @@ class Api_ctrl extends CI_Controller
 					} else {
 						$result['error'] = "Invalid Method.";
 						$this->response($result);
-					}
+					};
 					break;
 				case "about":
 					$this->load->model("About_model");

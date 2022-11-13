@@ -67,7 +67,8 @@
         $.ajax({
             type: "POST",
             url: "<?=base_url("api/update/about")?>",
-            data: {
+            contentType : "application/json",
+            data: JSON.stringify({
                 "update_where":{"logo":"<?=$about['logo']?>"},
                 "update":{
                     "logo":$("#ed_logo").val(),
@@ -77,7 +78,7 @@
                     "bussiness_no":$("#ed_bussiness_no").val(),
                     "description":$("#ed_description").val(),
                 }
-            },
+            }),
             success: function(respone){
                 $("#nav-about").click();
             },

@@ -85,10 +85,12 @@
     <script>
         function load(path){
             console.log("Loading : "+path);
+            $("#page").hide();
             $.get({
                 url: "<?=base_url("element?path=")?>"+path,
                 success: function(respone){
                     $("#page").html(respone);
+                    $("#page").show(200);
                 },
             });
         }

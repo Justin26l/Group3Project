@@ -1,4 +1,4 @@
-<h2>Menu</h2>
+<h2>branch</h2>
 <p class="d-inline">Limit</p>
 <select id="limit" class="form-select-sm">
     <option value=25>25</option>
@@ -15,7 +15,7 @@
     </svg>
 </button>
 
-<button type="button" class="btn btn-sm btn-primary" onclick="menu_create_init()">
+<button type="button" class="btn btn-sm btn-primary" onclick="branch_create_init()">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
     </svg>
@@ -40,109 +40,66 @@
     </table>
 </div>
 
-<div id="menu_form" style="display:none">
-    <h2 id="menu_form_title">Menu Edit</h2>
-    <img id="ed_img_preview"  width="100px">
+<div id="branch_form" style="display:none">
+    <br>
+    <h2 id="branch_form_title">Branch Edit</h2>
     
     <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="ed_menu_id" disabled>
-        <label for="ed_menu_id">id</label>
+        <input type="text" class="form-control" id="ed_branch_id" disabled>
+        <label for="ed_branch_id">id</label>
     </div>
     <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="ed_img" >
-        <label for="ed_img">Image</label>
+        <input type="text" class="form-control" id="ed_location">
+        <label for="ed_location">Location</label>
     </div>
     <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="ed_category">
-        <label for="ed_category">Category</label>
-    </div>
-    <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="ed_prod_name">
-        <label for="ed_prod_name">Product Name</label>
-    </div>
-    <div class="form-floating mb-3">
-        <input type="number" class="form-control" id="ed_price">
-        <label for="ed_price">Price</label>
+        <input type="text" class="form-control" id="ed_branch_name">
+        <label for="ed_branch_name">Branch Name</label>
     </div>
     <div class="form-floating mb-3">
         <textarea type="text" class="form-control" id="ed_description"></textarea>
         <label for="ed_description">Description</label>
     </div>
     <div class="text-end">
-        <button id="menu_form_btn" type="button" class="btn btn-primary rounded-3 px-4" onclick="menuEdit()">Save</button>
+        <button id="branch_form_btn" type="button" class="btn btn-primary rounded-3 px-4" onclick="branchEdit()">Save</button>
     </div>
 </div>
 
 <script>
-
-    function menu_create_init(){
+    function branch_create_init(){
         $("#table").hide();
-        $("#menu_form").show(250);
-        $("#menu_form_title").html("Create");
-        $("#menu_form_btn").attr("onclick","menuCreate()")
+        $("#branch_form").show(250);
+        $("#branch_form_title").html("Create");
+        $("#branch_form_btn").attr("onclick","branchCreate()")
 
-        $("#ed_menu_id").val("");
-        $("#ed_img").val("");
-        $("#ed_category").val("");
-        $("#ed_prod_name").val("");
-        $("#ed_price").val("");
+        $("#ed_branch_id").val("");
+        $("#ed_location").val("");
+        $("#ed_branch_name").val("");
         $("#ed_description").val("");
     }
 
-    function menu_edit_init(id,img,cat,nm,price,desc){
+    function branch_edit_init(id,loc,name,desc){
         $("#table").hide();
-        $("#menu_form").show(250);
-        $("#menu_form_title").html("Edit");
-        $("#menu_form_btn").attr("onclick","menuEdit()")
+        $("#branch_form").show(250);
+        $("#branch_form_title").html("Edit");
+        $("#branch_form_btn").attr("onclick","branchEdit()")
 
-        $("#ed_menu_id").val(id);
-        $("#ed_img").val(img);
-        $("#ed_category").val(cat);
-        $("#ed_prod_name").val(nm);
-        $("#ed_price").val(price);
+        $("#ed_branch_id").val(id);
+        $("#ed_location").val(loc);
+        $("#ed_branch_name").val(name);
         $("#ed_description").val(desc);
     }
     
     // fetch
-    function menuCreate(){
+    function branchCreate(){
         $.ajax({
             type: "POST",
-            url: "<?=base_url("api/create/menu")?>",
+            url: "<?=base_url("api/create/branch")?>",
             contentType : "application/json",
             data: JSON.stringify({
                 "create":{
-                    "img":$("#ed_img").val(),
-                    "category":$("#ed_category").val(),
-                    "prod_name":$("#ed_prod_name").val(),
-                    "price":$("#ed_price").val(),
-                    "description":$("#ed_description").val(),
-                }
-            }),
-            success: function(respone){
-                if(respone['status']=="ok"){getTable();}
-                else{getTable();}
-            },
-        });
-    }
-
-    function menuEdit(id,arr){
-        $("#ed_menu_id").val();
-        $("#ed_img").val();
-        $("#ed_category").val();
-        $("#ed_prod_name").val();
-        $("#ed_price").val();
-        $("#ed_description").val();
-        $.ajax({
-            type: "POST",
-            url: "<?=base_url("api/update/menu")?>",
-            contentType : "application/json",
-            data: JSON.stringify({
-                "update_where":{"menu_id":$("#ed_menu_id").val()},
-                "update":{
-                    "img" : $("#ed_img").val(),
-                    "category" : $("#ed_category").val(),
-                    "prod_name" : $("#ed_prod_name").val(),
-                    "price" : $("#ed_price").val(),
+                    "location" : $("#ed_location").val(),
+                    "branch_name" : $("#ed_branch_name").val(),
                     "description" : $("#ed_description").val(),
                 }
             }),
@@ -152,13 +109,19 @@
             },
         });
     }
-    function menuDelete(id){
+
+    function branchEdit(){
         $.ajax({
             type: "POST",
-            url: "<?=base_url("api/delete/menu")?>",
+            url: "<?=base_url("api/update/branch")?>",
             contentType : "application/json",
             data: JSON.stringify({
-                "delete":{"menu_id":id}
+                "update_where":{"branch_id":$("#ed_branch_id").val()},
+                "update":{
+                    "location" : $("#ed_location").val(),
+                    "branch_name" : $("#ed_branch_name").val(),
+                    "description" : $("#ed_description").val(),
+                }
             }),
             success: function(respone){
                 if(respone['status']=="ok"){getTable();}
@@ -166,11 +129,27 @@
             },
         });
     }
+
+    function branchDelete(id){
+        $.ajax({
+            type: "POST",
+            url: "<?=base_url("api/delete/branch")?>",
+            contentType : "application/json",
+            data: JSON.stringify({
+                "delete":{"branch_id":id}
+            }),
+            success: function(respone){
+                if(respone['status']=="ok"){getTable();}
+                else{getTable();}
+            },
+        });
+    }
+
     function getTable(){
-        $("#menu_form,#table").hide();
+        $("#branch_form,#table").hide();
         $("#table").show(250);
         $.get(
-            "<?=base_url("api/read/menu?limit=")?>"+$("#limit").val(), 
+            "<?=base_url("api/read/branch?limit=")?>"+$("#limit").val(), 
             function( data ) {
                 console.log(data);
                 let result = data['result'];
@@ -180,7 +159,7 @@
                 Object.keys(result[0]).forEach(function(head) {
                     // console.log(key, result[idx][key]);
                     if (head!="is_deleted"){
-                        table += "<th>"+(head=="menu_id"?"#":head)+"</th>";
+                        table += "<th>"+(head=="branch_id"?"#":head)+"</th>";
                     }
                 });
                 table += "</tr></thead>";
@@ -188,18 +167,16 @@
                 table+="<tbody class='table-group-divider'>";
                 Object.keys(result).forEach(function(idx) {
                     // console.log(idx, result[idx]);
-                    let id = result[idx]['menu_id'];
+                    let id = result[idx]['branch_id'];
                     table+="<tr>";
                     Object.keys(result[idx]).forEach(function(key) {
                         // console.log(key, result[idx][key]);
-                        if (key=="img"){
-                            table += "<td><img width='100px' src='"+result[idx][key]+"'></td>";
-                        } else if (key!="is_deleted"){
+                        if (key!="is_deleted"){
                             table += "<td>"+result[idx][key]+"</td>";
                         }
                     });
                         
-                    table+="<td><div class='btn-group'><button class='btn btn-sm btn-primary' onclick=\"menu_edit_init('"+id+"','"+result[idx]['img']+"','"+result[idx]['category']+"','"+result[idx]['prod_name']+"','"+result[idx]['price']+"','"+result[idx]['description']+"')\">Edit</button><button class='btn btn-sm btn-danger' onclick='menuDelete(\""+id+"\")'>Delete</button></div></td></tr>";
+                    table+="<td><div class='btn-group'><button class='btn btn-sm btn-primary' onclick=\"branch_edit_init('"+id+"','"+result[idx]['location']+"','"+result[idx]['branch_name']+"','"+result[idx]['description']+"')\">Edit</button><button class='btn btn-sm btn-danger' onclick='branchDelete(\""+id+"\")'>Delete</button></div></td></tr>";
                 });
 
                 table+="</tbody>";
@@ -210,9 +187,5 @@
 
     $(document).ready(function(){
         getTable();
-        $("#ed_img").change(()=>{
-            let x = $("#ed_img").val();
-            $("#ed_img_preview").attr("src",x);
-        });
     })
 </script>

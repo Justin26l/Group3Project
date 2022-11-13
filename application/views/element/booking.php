@@ -7,6 +7,14 @@
     <option value=150>150</option>
     <option value=200>200</option>
 </select>
+
+<button type="button" class="btn btn-sm btn-primary" onclick="getTable()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+    </svg>
+</button>
+
 <div class="table-responsive shadow">
     <table id="table" class="table table-striped table-sm text-center mb-0">
         <thead>
@@ -42,6 +50,8 @@
         });
     }
     function getTable(){
+        $("#table").hide();
+        $("#table").show(250);
         $.get(
             "<?=base_url("api/read/booking?book_branch=".intval($admin['branch']))."&limit="?>"+$("#limit").val(), 
             function( data ) {
@@ -84,7 +94,6 @@
 
     $(document).ready(function(){
         $("#bookingTime").change(function(){console.log($("#bookingTime").val())})
-        $("#limit").change(function(){getTable();})
         getTable();
     })
 </script>
