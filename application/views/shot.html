@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+    <style> 
+        .side-open,.side-close {position: static;display:inline-block;height: 100%;background-color: #ffffff;animation-duration: 0.6s;background-color: gray;}
+        .side-open{right:0px;width: 0%;;animation-name: shot-open;}
+        .side-close{width: 100%;animation-name: shot-close;}
+        body{margin:0px;}
+        @keyframes shot-close {
+        from {width: 0%;}
+        to   {width: 100%;}
+        }
+        @keyframes shot-open {
+        from {width: 100%;}
+        to   {width: 0%;}
+        }
+    </style>
+</head>
+<body>
+
+
+<div id="R" style="z-index: -1;position: fixed;"></div>
+
+<p style="margin:0px">123123</p>
+
+
+<button onclick="$('#L, #R').addClass('side-close')">
+    shot close
+</button>
+
+<button onclick="$('#L, #R').removeClass('side-close'); $('#L,#R').addClass('side-open');setTimeout(function(){$('#L,#R').removeClass('side-open');},500)">
+    shot open
+</button>
+
+
+
+</body>
+</html>

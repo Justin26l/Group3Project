@@ -30,7 +30,7 @@ class MY_Model extends CI_Model{
     public function update($where,$data_array){
         $this->db->set($data_array);
         $this->db->where($where);
-        $this->db->replace($this->table);
+        $this->db->update($this->table);
     }
 
 
