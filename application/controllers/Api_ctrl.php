@@ -23,6 +23,7 @@ class Api_ctrl extends CI_Controller
 	];
 
 	private function response($status,$error,$result){
+		header('Access-Control-Allow-Origin: *');
 		header('Content-Type: application/json; charset=utf-8');
 		echo json_encode([
 			"status"=>$status,
