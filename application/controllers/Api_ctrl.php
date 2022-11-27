@@ -3,20 +3,45 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Api_ctrl extends CI_Controller
 {
+	
 
-	private function response($arr){
+	private $T_admin = ["admin_id","username","password","branch_id","superadmin"];
+	private $T_booking = ["booking_id","name","mobile","people","branch_id","booking_time","created_time","comment"];
+	private $T_branch = ["branch_id","location","branch_name","description","is_deleted"];
+	private $T_menu = ["menu_id","img","category","prod_name","price","description","is_deleted"];
+	private $T_about = ["logo","company_name","description","customer_service_no","bussiness_name","bussiness_no"];
+
+
+	private $stat = ["ok",'error'];
+
+	private $err = [
+		"Unvalid Path.",//url
+		"Unvalid Action-",//url
+		"Unvalid Param-",//get
+		"Post Fields Is Empty.",//post
+		"Permission Denied."
+	];
+
+	private function response($status,$error,$result){
+		header('Access-Control-Allow-Origin: *');
 		header('Content-Type: application/json; charset=utf-8');
-		echo json_encode($arr);
+		echo json_encode([
+			"status"=>$status,
+			"error"=>$error,
+			"result"=>$result,
+		]);
 		return;
 	}
+
+	// ========== Verify ========== //
 
 	private function ismod(){
 		$this->load->library('session');
 		if(!$this->session->has_userdata('mod')){
-			$result['error'] = "Permission Denied.";
-			$this->response($result);
+			$error = $this->err[4];
+			$this->response($this->stat[1],$this->err[5],"");
 			return false;
-		}else{
+		} else {
 			return true;
 		}
 	}
@@ -28,24 +53,37 @@ class Api_ctrl extends CI_Controller
 			$session = $this->session->userdata('mod');
 			$admin = $this->Admin_model->read(['admin_id'=>$session['admin_id']])[0];
 			if(! $admin['superadmin']===1){
-				$result['error'] = "Permission Denied.";
-				$this->response($result);
+				$error = $this->err[4];
+				$this->response($this->stat[1],$this->err[5],"");
 				return;
-			}else{
+			} else {
 				return true;
 			}
 		}
 	}
 
-	public function api($method, $path){
+	private function validParam($input,$checkList){
+		$input = array_keys($input);
+		foreach($input as $i){
+			if(!in_array($i,$checkList)){
+				$status = $this->stat[1];
+				$error = $this->err[2].$i.'.';
+				$this->response($status,$error,"");
+				return false;
+			};
+		};
+		return true;
+	}
+	// ========== API ========== //
+	// ========== API ========== //
+	// ========== API ========== //
+
+	public function api($action, $path){
 		try {
 			$this->load->library('session');
-
-			$result = [
-				"status" => "error",
-				"error" => "",
-				"result" => "",
-			];
+			$status = $this->stat[0];
+			$error  = "";
+			$result = "";
 
 			// catch json post
 			if( isset($_SERVER["CONTENT_TYPE"]) && $_SERVER["CONTENT_TYPE"]=="application/json"){
@@ -58,156 +96,153 @@ class Api_ctrl extends CI_Controller
 
 			// format if client ask for limit
 			$readlimit = 99;
+			if(isset($get[0])){unset($get[0]);};
 			if(isset($get['limit'])){
 				$readlimit = $get["limit"];
 				unset($get["limit"]);
 			};
-
-			// prepair error code , not use now
-			if (empty($post)) {
-				$result['error'] = "Post Fields Is Empty.";
+			
+			// post but empty body
+			if ( $_SERVER['REQUEST_METHOD'] === 'POST' && empty($post)) {
+				$error = $this->err[3];
 			};
 
 			// api
 			switch ($path) {
 				case "booking":
 					$this->load->model("Booking_model");
-					if ($method == "create") {
-						$post['created_time']=time();
-						$result['status'] = "ok";
-						$result['result'] = $this->Booking_model->create($post['create']);
-						$this->response($result);
-					} else if ($method == "read") {
-						// if(!$this->ismod()){return;};
-						$result['status'] = "ok";
-						$result['error'] = "";
-						$result['result'] = $this->Booking_model->read($get, $readlimit);
-						$this->response($result);
-					} else if ($method == "update") {
+					if ($action == "create") {
+						$post['create']['status']="pending";
+						$post['create']['created_time']=time();
+
+						if(isset($post['create'])){
+							if ($this->validParam($post['create'],$this->T_booking)){
+								$result = $this->Booking_model->create($post['create']);
+								$this->response($status,$error,$result);
+							};
+						} else {
+							$error  = $this->err[2];
+						};
+						$this->response($status,$error,$result);
+					} else if ($action == "read") {
+						if ($this->validParam($get,$this->T_booking)){
+							$result = $this->Booking_model->read($get, $readlimit);
+							$this->response($status,$error,$result);
+						};
+					} else if ($action == "update") {
 						if(!$this->ismod()){return;};
-						$result['status'] = "ok";
-						$result['result'] = $this->Booking_model->update($post['update_where'], $post['update']);
-						$this->response($result);
-					// } else if ($method == "delete") {
-					// 	$result['status'] = "ok";
-					// 	$result['result'] = $this->Booking_model->soft_delete($post['delete']);
-					// 	$this->response($result);
+						$result = $this->Booking_model->update($post['update_where'], $post['update']);
+						$this->response($status,$error,$result);
+					// } else if ($action == "delete") {
+		
+					// 	$result = $this->Booking_model->soft_delete($post['delete']);
+					// 	$this->response($status,$error,$result);
 					} else {
-						$result['error'] = "Invalid Method.";
-						$this->response($result);
+						$error = $this->err[1].$action;
+						$this->response($status,$this->err[1].$action,$result);
 					};
 					break;
 				case "menu":
 					$this->load->model("Menu_model");
-					if ($method == "create") {
+					if ($action == "create") {
 						if(!$this->issuper()){return;};
-						$result['status'] = "ok";
-						$result['result'] = $this->Menu_model->create($post['create']);
-						$this->response($result);
-					} else if ($method == "read") {
+						$result = $this->Menu_model->create($post['create']);
+						$this->response($status,$error,$result);
+					} else if ($action == "read") {
 						if(!isset($get["is_deleted"])){$get["is_deleted"] = 0;}
-						$result['status'] = "ok";
-						$result['error'] = "";
-						$result['result'] = $this->Menu_model->read($get, $readlimit);
-						$this->response($result);
-					} else if ($method == "update") {
+						if($this->validParam($get,$this->T_menu)){
+							$result = $this->Menu_model->read($get, $readlimit);
+							$this->response($status,$error,$result);
+						};
+					} else if ($action == "update") {
 						if(!$this->issuper()){return;};
-						$result['status'] = "ok";
-						$result['result'] = $this->Menu_model->update($post['update_where'], $post['update']);
-						$this->response($result);
-					} else if ($method == "delete") {
+						$result = $this->Menu_model->update($post['update_where'], $post['update']);
+						$this->response($status,$error,$result);
+					} else if ($action == "delete") {
 						if(!$this->issuper()){return;};
-						$result['status'] = "ok";
-						$result['result'] = $this->Menu_model->soft_delete($post['delete']);
-						$this->response($result);
+						$result = $this->Menu_model->soft_delete($post['delete']);
+						$this->response($status,$error,$result);
 					} else {
-						$result['error'] = "Invalid Method.";
-						$this->response($result);
+						$error = $this->err[1].$action;
+						$this->response($status,$error,$result);
 					};
 					break;
 				case "branch":
 					$this->load->model("Branch_model");
-					if ($method == "create") {
+					if ($action == "create") {
 						if(!$this->issuper()){return;};
-						$result['status'] = "ok";
-						$result['result'] = $this->Branch_model->create($post['create']);
-						$this->response($result);
-					} else if ($method == "read") {
+						$result = $this->Branch_model->create($post['create']);
+						$this->response($status,$error,$result);
+					} else if ($action == "read") {
 						if(!isset($get["is_deleted"])){$get["is_deleted"] = 0;}
-						$result['status'] = "ok";
-						$result['error'] = "";
-						$result['result'] = $this->Branch_model->read($get, $readlimit);
-						$this->response($result);
-					} else if ($method == "update") {
+						if($this->validParam($get,$this->T_branch)){
+							$result = $this->Branch_model->read($get, $readlimit);
+							$this->response($status,$error,$result);
+						};
+					} else if ($action == "update") {
 						if(!$this->issuper()){return;};
-						$result['status'] = "ok";
-						$result['result'] = $this->Branch_model->update($post['update_where'], $post['update']);
-						$this->response($result);
-					} else if ($method == "delete") {
+						$result = $this->Branch_model->update($post['update_where'], $post['update']);
+						$this->response($status,$error,$result);
+					} else if ($action == "delete") {
 						if(!$this->issuper()){return;};
-						$result['status'] = "ok";
-						$result['result'] = $this->Branch_model->soft_delete($post['delete']);
-						$this->response($result);
+						$result = $this->Branch_model->soft_delete($post['delete']);
+						$this->response($status,$error,$result);
 					} else {
-						$result['error'] = "Invalid Method.";
-						$this->response($result);
+						$error = $this->err[1].$action;
+						$this->response($status,$error,$result);
 					};
 					break;
 				case "about":
 					$this->load->model("About_model");
-					// if ($method == "create") {
-					// 	$result['status'] = "ok";
-					// 	$result['result'] = $this->About_model->create($post['create']);
-					// 	$this->response($result);
+					// if ($action == "create") {
+		
+					// 	$result = $this->About_model->create($post['create']);
+					// 	$this->response($status,$error,$result);
 					// } else 
-					if ($method == "read") {
-						$result['status'] = "ok";
-						$result['error'] = "";
-						$result['result'] = $this->About_model->read($get, $readlimit);
-						$this->response($result);
-					} else if ($method == "update") {
+					if ($action == "read") {
+						if($this->validParam($get,$this->T_about)){
+							$result = $this->About_model->read($get, $readlimit);
+							$this->response($status,$error,$result);
+						};
+					} else if ($action == "update") {
 						if(!$this->issuper()){return;};
-						$result['status'] = "ok";
-						$result['result'] = $this->About_model->update($post['update_where'], $post['update']);
-						$this->response($result);
-					// } else if ($method == "delete") {
-					// 	$result['status'] = "ok";
-					// 	$result['result'] = $this->About_model->soft_delete($post['delete']);
-					// 	$this->response($result);
+						$result = $this->About_model->update($post['update_where'], $post['update']);
+						$this->response($status,$error,$result);
+					// } else if ($action == "delete") {
+		
+					// 	$result = $this->About_model->soft_delete($post['delete']);
+					// 	$this->response($status,$error,$result);
 					} else {
-						$result['error'] = "Invalid Method.";
-						$this->response($result);
+						$error = $this->err[1].$action;
+						$this->response($status,$error,$result);
 					};
 					break;
 				case "admin":
 					$this->load->model("Admin_model");
 					if(!$this->issuper()){return;};
 					
-					if ($method == "create") {
-						$result['status'] = "ok";
-						$result['result'] = $this->Admin_model->create($post['create']);
-						$this->response($result);
-					} else if ($method == "read") {
-						$result['status'] = "ok";
-						$result['error'] = "";
-						$result['result'] = $this->Admin_model->read($get, $readlimit);
-						$this->response($result);
-					} else if ($method == "update") {
-						$result['status'] = "ok";
-						$result['result'] = $this->Admin_model->update($post['update_where'], $post['update']);
-						$this->response($result);
-					} else if ($method == "delete") {
-						$result['status'] = "ok";
-						$result['result'] = $this->Admin_model->soft_delete($post['delete']);
-						$this->response($result);
+					if ($action == "create") {
+						$result = $this->Admin_model->create($post['create']);
+						$this->response($status,$error,$result);
+					} else if ($action == "read") {
+						if($this->validParam($get,$this->T_admin)){
+							$result = $this->Admin_model->read($get, $readlimit);
+							$this->response($status,$error,$result);
+						};
+					} else if ($action == "update") {
+						$result = $this->Admin_model->update($post['update_where'], $post['update']);
+						$this->response($status,$error,$result);
+					} else if ($action == "delete") {
+						$result = $this->Admin_model->soft_delete($post['delete']);
+						$this->response($status,$error,$result);
 					} else {
-						$result['error'] = "Invalid Method.";
-						$this->response($result);
+						$error = $this->err[1].$action;
+						$this->response($status,$error,$result);
 					};
 					break;
 				default:
-					$result['error'] = "unvalid path.";
-					$this->response($result);
+					$error = $this->err[0];
+					$this->response($status,$error,$result);
 					break;
 			}
 		} catch (Exception $e) {
@@ -215,3 +250,5 @@ class Api_ctrl extends CI_Controller
 		}
 	}
 }
+
+// echo $this->db->last_query();

@@ -35,6 +35,20 @@
 </div>
 
 <script>
+    
+
+    function timestamp_DateTime(timestamp){
+        var a = new Date(timestamp * 1000);
+        var year = a.getFullYear();
+        var month = a.getMonth()+1;
+        var date = a.getDate();
+        var hour = a.getHours();
+        var min = a.getMinutes();
+        var sec = a.getSeconds();
+        var time = year + '-' + month + '-' + date + ' ' + hour + ':' + min + ':' + sec ;
+        return time;
+    }
+
     function bookUpdate(id,status){
         $.ajax({
             type: "POST",
@@ -80,6 +94,8 @@
                             }else if(result[idx][key]=='pending'){
                                 table += "<td class='btn-group btn-group-sm'><button type='button' class='btn btn-success' onclick='bookUpdate("+result[idx]['book_id']+",\"accept\")'>Accept</button><button type='button' class='btn btn-danger' onclick='bookUpdate("+result[idx]['book_id']+",\"denied\")'>Denied</button></td>";
                             };
+                        }else if(key=="created_time"){
+                            table += "<td>"+timestamp_DateTime(result[idx][key])+"</td>";
                         }else{
                             table += "<td>"+result[idx][key]+"</td>";
                         }
@@ -95,5 +111,6 @@
     $(document).ready(function(){
         $("#bookingTime").change(function(){console.log($("#bookingTime").val())})
         getTable();
+        // console.log(timestamp_DateTime(Date.now()/1000))
     })
 </script>
