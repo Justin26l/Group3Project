@@ -23,10 +23,10 @@
                 <th>bookingid</th>
                 <th>name</th>
                 <th>email</th>
-                <th>phone</th>
-                <th>datetime</th>
+                <th>mobile</th>
+                <th>booking_time</th>
                 <th>people</th>
-                <th>message</th>
+                <th>comment</th>
             </tr>
         </thead>
         <tbody class="table-group-divider">
