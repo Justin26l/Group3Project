@@ -168,10 +168,9 @@
     }
     function getTable(){
         $("#menu_form,#table").hide();
-        $("#table").show(250);
         $.get(
             "<?=base_url("api/read/menu?limit=")?>"+$("#limit").val(), 
-            function( data ) {
+            ( data )=>{
                 console.log(data);
                 let result = data['result'];
                 let table = "";
@@ -204,11 +203,12 @@
 
                 table+="</tbody>";
                 $( "#table" ).html( table );
+                $("#table").show(250);
             }
         );
     }
 
-    $(document).ready(function(){
+    $(document).ready(()=>{
         getTable();
         $("#ed_img").change(()=>{
             let x = $("#ed_img").val();

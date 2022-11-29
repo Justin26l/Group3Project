@@ -79,14 +79,13 @@ class Api_ctrl extends CI_Controller
 	// ========== API ========== //
 
 	public function api($action, $path){
-		echo 1;
 		try {
 			$this->load->library('session');
 			$status = $this->stat[0];
 			$error  = "";
 			$result = "";
 
-			// catch json post
+			// catch json post & assign to native post handler
 			if( isset($_SERVER["CONTENT_TYPE"]) && $_SERVER["CONTENT_TYPE"]=="application/json"){
 				$_POST = json_decode(file_get_contents("php://input"),1);
 			};
@@ -196,7 +195,6 @@ class Api_ctrl extends CI_Controller
 				case "about":
 					$this->load->model("About_model");
 					// if ($action == "create") {
-		
 					// 	$result = $this->About_model->create($post['create']);
 					// 	$this->response($status,$error,$result);
 					// } else 
@@ -210,7 +208,6 @@ class Api_ctrl extends CI_Controller
 						$result = $this->About_model->update($post['update_where'], $post['update']);
 						$this->response($status,$error,$result);
 					// } else if ($action == "delete") {
-		
 					// 	$result = $this->About_model->soft_delete($post['delete']);
 					// 	$this->response($status,$error,$result);
 					} else {
