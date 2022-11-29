@@ -59,7 +59,8 @@ class Mod_ctrl extends CI_Controller
 					$this->load->view('element/branch',['admin'=>$admin]);
 					break;
 				case"about":
-					$about=$this->db->get('about')->row_array();
+					$this->load->model("About_model");
+					$about=$this->About_model->readOne();
 					$this->load->view('element/about',['admin'=>$admin,"about"=>$about]);
 					break;
 				case"admin":
