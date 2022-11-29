@@ -18,7 +18,10 @@ class MY_Model extends CI_Model{
 
     public function read($where, $limit=99){
         return $this->db->get_where($this->table, $where, $limit)->result_array();
-        
+    }
+
+    public function readOne(){
+        return $this->db->get($this->table)->row_array();
     }
 
     public function search($where, $limit=99){
