@@ -1,11 +1,16 @@
-<h2>Booking</h2>
-<p class="d-inline">Limit</p>
+<h2>Order</h2>
+<p class="d-inline">Date</p>
+
+<input id="date" type="date" value="">
+
+<p class="ms-4 d-inline">Limit</p>
 <select id="limit" class="form-select-sm">
-    <option value=25>25</option>
-    <option value=50>50</option>
-    <option value=100>100</option>
-    <option value=150>150</option>
-    <option value=200>200</option>
+    <option value=100 selected>100</option>
+    <option value=250>250</option>
+    <option value=500>500</option>
+    <option value=750>750</option>
+    <option value=1000>1000</option>
+    <option value=1000>2000</option>
 </select>
 
 <button type="button" class="btn btn-sm btn-primary" onclick="getTable()">
@@ -36,12 +41,12 @@
 
 <script>
 
-    function bookUpdate(id,status){
+    function orderUpdate(id,status){
         $.ajax({
             type: "POST",
-            url: "<?=base_url("api/update/booking")?>",
+            url: "<?=base_url("api/update/order")?>",
             data: {
-                "update_where":{"book_id":id},
+                "update_where":{"order_id":id},
                 "update":{"status":status}
             },
             success: function(respone){
@@ -53,8 +58,12 @@
     function getTable(){
         $("#table").hide();
         $("#table").show(250);
+        let startdate = parseInt((new Date($("#date").val())).getTime() /1000);
+        let enddate   = startdate+86400;
+        let DateSQL   = "created_time>="+startdate+"&created_time<="+enddate;
+        console.log(DateSQL);
         $.get(
-            "<?=base_url("api/read/booking?book_branch=".intval($admin['branch']))."&limit="?>"+$("#limit").val(), 
+            "<?= base_url("api/read/order?".($admin['superadmin']!=1 ? "order_branch=".intval($admin['branch'])."&" : ""))?>"+DateSQL, 
             function( data ) {
                 // console.log(data);
                 let result = data['result'];
@@ -63,7 +72,7 @@
                 table += "<thead><tr>";
                 Object.keys(result[0]).forEach(function(head) {
                     // console.log(key, result[idx][key]);
-                    table += "<th>"+(head=="book_id"?"#":head)+"</th>";
+                    table += "<th>"+(head=="order_id"?"#":head)+"</th>";
                 });
                 table += "</tr></thead>";
 
@@ -73,15 +82,7 @@
                     table+="<tr>";
                     Object.keys(result[idx]).forEach(function(key) {
                         // console.log(key, result[idx][key]);
-                        if (key=="status"){
-                            if (result[idx][key]=='accept'){
-                                table += "<td class='bg-success bg-opacity-75 text-white'>"+result[idx][key]+"</td>";
-                            }else if(result[idx][key]=='denied'){
-                                table += "<td class='bg-danger bg-opacity-75 text-white'>"+result[idx][key]+"</td>";
-                            }else if(result[idx][key]=='pending'){
-                                table += "<td class='btn-group btn-group-sm'><button type='button' class='btn btn-success' onclick='bookUpdate("+result[idx]['book_id']+",\"accept\")'>Accept</button><button type='button' class='btn btn-danger' onclick='bookUpdate("+result[idx]['book_id']+",\"denied\")'>Denied</button></td>";
-                            };
-                        }else if(key=="created_time"){
+                        if(key=="created_time"){
                             table += "<td>"+timestamp_DateTime(result[idx][key])+"</td>";
                         }else{
                             table += "<td>"+result[idx][key]+"</td>";
@@ -96,7 +97,7 @@
     }
 
     $(document).ready(function(){
-        $("#bookingTime").change(function(){console.log($("#bookingTime").val())})
+        $("#date").val(dateNow());
         getTable();
         // console.log(timestamp_DateTime(Date.now()/1000))
     })
