@@ -166,13 +166,12 @@
             },
         });
     }
+
     function getTable(){
-        $("#menu_form,#table").hide();
-        $("#table").show(250);
+        $("#menu_form, #table").hide();
         $.get(
-            "<?=base_url("api/read/menu?limit=")?>"+$("#limit").val(), 
-            function( data ) {
-                console.log(data);
+            url="<?=base_url("api/read/menu?limit=")?>"+$("#limit").val(),
+            success = (data)=>{
                 let result = data['result'];
                 let table = "";
                 // console.log(Object.keys(result[0]));
@@ -206,6 +205,7 @@
                 $( "#table" ).html( table );
             }
         );
+        $("#table").show(250);
     }
 
     $(document).ready(function(){

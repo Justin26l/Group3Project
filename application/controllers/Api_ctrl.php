@@ -78,7 +78,6 @@ class Api_ctrl extends CI_Controller
 	// ========== API ========== //
 
 	public function api($action, $path){
-		echo 1;
 		try {
 			$this->load->library('session');
 			$status = $this->stat[0];
