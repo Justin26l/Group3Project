@@ -52,7 +52,6 @@
     }
     function getTable(){
         $("#table").hide();
-        $("#table").show(250);
         $.get(
             "<?=base_url("api/read/booking?book_branch=".intval($admin['branch']))."&limit="?>"+$("#limit").val(), 
             function( data ) {
@@ -93,6 +92,7 @@
                 $( "#table" ).html( table );
             }
         );
+        $("#table").show(250);
     }
 
     $(document).ready(function(){

@@ -147,7 +147,6 @@
 
     function getTable(){
         $("#branch_form,#table").hide();
-        $("#table").show(250);
         $.get(
             "<?=base_url("api/read/branch?limit=")?>"+$("#limit").val(), 
             function( data ) {
@@ -183,6 +182,7 @@
                 $( "#table" ).html( table );
             }
         );
+        $("#table").show(250);
     }
 
     $(document).ready(function(){
