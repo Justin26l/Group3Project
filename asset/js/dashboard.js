@@ -15,6 +15,6 @@ function dateNow(){
     let year = a.getFullYear();
     let month = a.getMonth()+1;
     let date = a.getDate();
-    let time = year + '-' + month + '-' + date;
+    let time = month + '/' + date+ '/' +year;
     return time;
 }

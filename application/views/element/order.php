@@ -52,8 +52,8 @@
         <br>
 
         <div class="btn-group" role="group">
-            <button id="dine" type="button" class="btn btn-lg border border-2 btn-primary" onclick="$(this).addClass('btn-primary');$('#deli').removeClass('btn-warning');$('#deliInfo').hide('fast');" >Dine In</button>
-            <button id="deli" type="button" class="btn btn-lg border border-2" onclick="$(this).addClass('btn-warning');$('#dine').removeClass('btn-primary');$('#deliInfo').show('fast');" >Deliver</button>
+            <button id="dine" type="button" class="btn btn-lg border border-2 btn-primary" onclick="setDine('dine')" >Dine In</button>
+            <button id="deli" type="button" class="btn btn-lg border border-2" onclick="setDeli('deli')" >Deliver</button>
         </div>
         <br><br>
 
@@ -76,7 +76,7 @@
     </div>
 </div>
 
-<div id="receipt" class="rounded-3 shadow mt-4 p-2" >
+<div id="receipt" class="rounded-3 shadow mt-4 p-2" style="display:none;" >
 style="display:none;"
 </div>
 
@@ -150,49 +150,80 @@ style="display:none;"
     };
 
     // new order //
-
+    var order    = {};
     var menuList = {};
-    var cart = {};
+    var cart     = {};
 
     function create_order_init(){
         $("#table").hide();
-        getMenu()
+        getMenu();
+        order = {
+            deliver : 0,
+            address : null,
+            order_by: null,
+            items   : [],
+            total   : 0,
+        };
+    }
+
+    function setDine(x){
+        $('#'+x).addClass('btn-primary');
+        $('#deli').removeClass('btn-warning');
+        $('#deliInfo').hide('fast');
+        order.deliver = 0;
+        order.address = null;
+        order.order_by= null;
+    }
+
+    function setDeli(x){
+        $('#'+x).addClass('btn-warning');
+        $('#dine').removeClass('btn-primary');
+        $('#deliInfo').show('fast');
+        order.deliver = 1;
     }
 
     function cart_minus(jar){
         if(cart[jar]==undefined){
-            // console.log("nothing in cart to remove");
+            $("#m_"+jar).val(0);
         }else if(cart[jar]>1){
             cart[jar]-=1;
+            $("#m_"+jar).val(cart[jar]);
         }else if(cart[jar]==1){
             delete cart[jar];
+            $("#m_"+jar).hide("fast");
+            $("#m_"+jar).val("");
         };
     }
 
     function cart_plus(jar){
         if(cart[jar]==undefined){
             cart[jar]=1;
+            $("#m_"+jar).val(cart[jar]);
+            $("#m_"+jar).show("fast");
         }else{
             cart[jar]+=1;
+            $("#m_"+jar).val(cart[jar]);
         }
     }
 
     function getMenu(){
         $("#new_order").hide();
         $("#MenuItem, #MenuCat").html("");
+        menuList = {};
+        cart = {};
         $.get(
             "<?=base_url("api/read/menu")?>",
             (data)=>{
                 let result = data['result'];
                 let MenuCat ="";
-                menuList = {};
+
                 result.forEach(function(xx) {
                     menuList[xx['menu_id']] = xx;
                     let itemBox = '<div id="'+xx['category']+'" class="row itembox" style="display:none;"></div>';
-                    let item = '<div class="col-3"><div class="text-center rounded-4 shadow"><img class="img-fluid rounded-4" src="'+xx['img']+'"><h4>'+xx['prod_name']+' ('+xx['menu_id']+')</h4><div class="d-flex"><p class="flex1 ps-2 pt-2 text-start">$ '+xx['price']+'</p><div class="flex1 btn-group p-2"><button class="btn btn-sm btn-primary fw-bold" onclick="cart_minus('+xx['menu_id']+')">-</button><button class="btn btn-sm btn-primary fw-bold" onclick="cart_plus('+xx['menu_id']+')">+</button></div></div></div></div>';
+                    let item = '<div class="col-lg-3 col-md-4 col-6 py-1"><div class="text-center rounded-4 shadow"><img class="img-fluid rounded-4" src="'+xx['img']+'"><h4>'+xx['prod_name']+' ('+xx['menu_id']+')</h4><div class="d-flex"><p class="flex1 ps-2 pt-2 text-start">$ '+xx['price']+'</p><div class="flex1 btn-group p-2"><button class="btn btn-sm btn-primary fw-bold" onclick="cart_minus('+xx['menu_id']+')">-</button><input id="m_'+xx['menu_id']+'" style="width:30%;display:none;"></input><button class="btn btn-sm btn-primary fw-bold" onclick="cart_plus('+xx['menu_id']+')">+</button></div></div></div></div>';
 
                     if(document.querySelector("#"+xx['category']) == null ){
-                        MenuCat+='<div class="col-3"><div class="rounded-2 text-center py-2 bg-black text-white" onclick="$(\'.itembox\').hide();$(\'#'+xx['category']+'\').show();"><h3>'+xx['category']+'</h3></div></div>';
+                        MenuCat+='<div class="col-lg-3 col-md-4 col-6"><div class="rounded-2 text-center py-2 bg-black text-white" onclick="$(\'.itembox\').hide();$(\'#'+xx['category']+'\').show();"><h3>'+xx['category']+'</h3></div></div>';
                         $("#MenuItem").append(itemBox);
                         $("#"+xx['category']).append(item);
                         // console.log("New "+xx['category'])
@@ -211,14 +242,16 @@ style="display:none;"
     function buildRecipt(){
         let rcp = $("#receipt");
         rcp.hide();
+        rcp.html("");
 
         let reciept=[];
         let recieptView="";
-        let reciptPrice=0;
+        order.items = [];
+        order.total = 0;
 
         Object.keys(cart).forEach((key)=>{
             let val = cart[key];
-            reciept.push({
+            order.items.push({
                 "i":parseInt(key),
                 "n":menuList[key]['prod_name'],
                 "p":parseFloat(menuList[key]['price']),
@@ -229,17 +262,22 @@ style="display:none;"
 
         // build receipt
         recieptView += '<table class="w-100 text-center">';
-        reciept.forEach((yy)=>{
-            reciptPrice += yy.s;
+        order.items.forEach((yy)=>{
+            order.total += yy.s;
             recieptView += '<tr class="py-4"><td>('+yy.i+')</td><td class="px-2">'+yy.n+'</td><td class="px-2">'+yy.p+'</td><td class="px-2">x'+yy.q+'</td><td class="px-2">'+yy.s+'</td></tr>';
         })
-        reciptPrice = reciptPrice.toFixed(2);
-        recieptView += '<tr class="py-3 text-end"><td colspan="100%"><span>total : </span><h1 class="d-inline">'+reciptPrice+'</h1></td></tr></table>';
+        order.total = parseFloat(order.total.toFixed(2));
+        recieptView += '<tr class="py-3 text-end"><td colspan="100%"><span>total : </span><h1 class="d-inline">'+order.total+'</h1></td></tr></table>';
 
         // output
-        console.log(reciept);
+        console.log(order.items);
         rcp.html(recieptView);
         rcp.show("fast");
+
+        // $.post(
+        //     "<?= base_url("api/create/order?")?>",
+        //     JSON.stringify(order)
+        // )
     }
 
     $(document).ready(function(){
