@@ -92,6 +92,9 @@
     </div>
 
     <script>
+        
+        var tzoffset = (new Date()).getTimezoneOffset() * 60; //offset in milliseconds
+        
         function load(path){
             console.log("Loading : <?=base_url("element?path=")?>"+path);
             $("#page").hide();
