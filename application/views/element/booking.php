@@ -67,7 +67,7 @@
         $("#table").hide();
         $("#table").show(250);
         $.get(
-            "<?=base_url("api/read/booking?book_branch=".intval($admin['branch']))."&limit="?>"+$("#limit").val(), 
+            "<?=base_url("api/read/booking?book_branch=".intval($admin['branch_id']))."&limit="?>"+$("#limit").val(), 
             function( data ) {
                 // console.log(data);
                 let result = data['result'];
@@ -96,6 +96,13 @@
                             };
                         }else if(key=="created_time"){
                             table += "<td>"+timestamp_DateTime(result[idx][key])+"</td>";
+                        }else if(key=="modified_time"){
+                            if(result[idx][key]){
+                                table += "<td>"+timestamp_DateTime(result[idx][key])+"</td>";
+                            }else{
+                                table += "<td>---</td>";
+                            }
+                            
                         }else{
                             table += "<td>"+result[idx][key]+"</td>";
                         }

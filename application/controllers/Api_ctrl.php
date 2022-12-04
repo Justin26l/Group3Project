@@ -63,6 +63,7 @@ class Api_ctrl extends CI_Controller{
 
 	private function validParam($input,$checkList){
 		$input = array_keys($input);
+
 		foreach($input as $i){
 			if(!in_array($i,$checkList)){
 				$status = $this->stat[1];
@@ -129,6 +130,7 @@ class Api_ctrl extends CI_Controller{
 						$this->response($status,$error,$result);
 						return;
 					} else if ($action == "read") {
+
 						if ($this->validParam($get,$this->T_booking)){
 							$result = $this->Booking_model->read($get, $readlimit);
 							$this->response($status,$error,$result);

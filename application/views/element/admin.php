@@ -1,4 +1,4 @@
-<h2>branch</h2>
+<h2>Admin</h2>
 <p class="d-inline">Limit</p>
 <select id="limit" class="form-select-sm">
     <option value=25>25</option>
@@ -15,7 +15,7 @@
     </svg>
 </button>
 
-<button type="button" class="btn btn-sm btn-primary" onclick="branch_create_init()">
+<button type="button" class="btn btn-sm btn-primary" onclick="admin_create_init()">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
     </svg>
@@ -40,67 +40,75 @@
     </table>
 </div>
 
-<div id="branch_form" style="display:none">
-    <br>
-    <h2 id="branch_form_title">Branch Edit</h2>
+<div id="admin_form" style="display:none">
+    <h2 id="admin_form_title">Admin Edit</h2>
+    <img id="ed_img_preview"  width="100px">
     
     <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="ed_branch_id" disabled>
-        <label for="ed_branch_id">id</label>
+        <input type="text" class="form-control" id="ed_admin_id" disabled>
+        <label for="ed_admin_id">Admin_id</label>
     </div>
     <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="ed_location">
-        <label for="ed_location">Location</label>
+        <input type="text" class="form-control" id="ed_username" >
+        <label for="ed_username">Username</label>
     </div>
     <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="ed_branch_name">
-        <label for="ed_branch_name">Branch Name</label>
+        <input type="text" class="form-control" id="ed_password">
+        <label for="ed_password">Password</label>
     </div>
     <div class="form-floating mb-3">
-        <textarea type="text" class="form-control" id="ed_description"></textarea>
-        <label for="ed_description">Description</label>
+        <input type="number" class="form-control" id="ed_branch_id">
+        <label for="ed_branch_id">Branch_id</label>
+    </div>
+    <div class="form-floating mb-3">
+        <input type="number" class="form-control" id="ed_superadmin">
+        <label for="ed_superadmin">Superadmin</label>
     </div>
     <div class="text-end">
-        <button id="branch_form_btn" type="button" class="btn btn-primary rounded-3 px-4" onclick="branchEdit()">Save</button>
+        <button id="admin_form_btn" type="button" class="btn btn-primary rounded-3 px-4" onclick="adminEdit()">Save</button>
     </div>
 </div>
 
 <script>
-    function branch_create_init(){
-        $("#table").hide();
-        $("#branch_form").show(250);
-        $("#branch_form_title").html("Create");
-        $("#branch_form_btn").attr("onclick","branchCreate()")
 
+    function admin_create_init(){
+        $("#table").hide();
+        $("#admin_form").show(250);
+        $("#admin_form_title").html("Create");
+        $("#admin_form_btn").attr("onclick","adminCreate()")
+
+        $("#ed_admin_id").val("");
+        $("#ed_username").val("");
+        $("#ed_password").val("");
         $("#ed_branch_id").val("");
-        $("#ed_location").val("");
-        $("#ed_branch_name").val("");
-        $("#ed_description").val("");
+        $("#ed_superadmin").val("");
     }
 
-    function branch_edit_init(id,loc,name,desc){
+    function admin_edit_init(id,user,pwd,bh_id,spa){
         $("#table").hide();
-        $("#branch_form").show(250);
-        $("#branch_form_title").html("Edit");
-        $("#branch_form_btn").attr("onclick","branchEdit()")
+        $("#admin_form").show(250);
+        $("#admin_form_title").html("Edit");
+        $("#admin_form_btn").attr("onclick","adminEdit()")
 
-        $("#ed_branch_id").val(id);
-        $("#ed_location").val(loc);
-        $("#ed_branch_name").val(name);
-        $("#ed_description").val(desc);
+        $("#ed_admin_id").val(id);
+        $("#ed_username").val(user);
+        $("#ed_password").val(pwd);
+        $("#ed_branch_id").val(bh_id);
+        $("#ed_superadmin").val(spa);
     }
     
     // fetch
-    function branchCreate(){
+    function adminCreate(){
         $.ajax({
             type: "POST",
-            url: "<?=base_url("api/create/branch")?>",
+            url: "<?=base_url("api/create/admin")?>",
             contentType : "application/json",
             data: JSON.stringify({
                 "create":{
-                    "location" : $("#ed_location").val(),
-                    "branch_name" : $("#ed_branch_name").val(),
-                    "description" : $("#ed_description").val(),
+                    "user":$("#ed_username").val(),
+                    "pwd":$("#ed_password").val(),
+                    "bh_id":$("#ed_branch_id").val(),
+                    "spa":$("#ed_superadmin").val(),
                 }
             }),
             success: function(respone){
@@ -110,17 +118,23 @@
         });
     }
 
-    function branchEdit(){
+    function adminEdit(id,arr){
+        $("#ed_admin_id").val();
+        $("#ed_username").val();
+        $("#ed_password").val();
+        $("#ed_branch_id").val();
+        $("#ed_superadmin").val();
         $.ajax({
             type: "POST",
-            url: "<?=base_url("api/update/branch")?>",
+            url: "<?=base_url("api/update/admin")?>",
             contentType : "application/json",
             data: JSON.stringify({
-                "update_where":{"branch_id":$("#ed_branch_id").val()},
+                "update_where":{"menu_id":$("#ed_admin_id").val()},
                 "update":{
-                    "location" : $("#ed_location").val(),
-                    "branch_name" : $("#ed_branch_name").val(),
-                    "description" : $("#ed_description").val(),
+                    "img" : $("#ed_username").val(),
+                    "category" : $("#ed_password").val(),
+                    "prod_name" : $("#ed_branch_id").val(),
+                    "price" : $("#ed_superadmin").val(),
                 }
             }),
             success: function(respone){
@@ -129,14 +143,13 @@
             },
         });
     }
-
-    function branchDelete(id){
+    function adminDelete(id){
         $.ajax({
             type: "POST",
-            url: "<?=base_url("api/delete/branch")?>",
+            url: "<?=base_url("api/delete/admin")?>",
             contentType : "application/json",
             data: JSON.stringify({
-                "delete":{"branch_id":id}
+                "delete":{"admin_id":id}
             }),
             success: function(respone){
                 if(respone['status']=="ok"){getTable();}
@@ -144,12 +157,11 @@
             },
         });
     }
-
     function getTable(){
-        $("#branch_form,#table").hide();
+        $("#admin_form,#table").hide();
         $("#table").show(250);
         $.get(
-            "<?=base_url("api/read/branch?branch_id=".intval($admin['branch_id']))."limit="?>"+$("#limit").val(), 
+            "<?=base_url("api/read/admin?branch_id=".intval($admin['branch_id']))."&limit="?>"+$("#limit").val(), 
             function( data ) {
                 console.log(data);
                 let result = data['result'];
@@ -159,7 +171,7 @@
                 Object.keys(result[0]).forEach(function(head) {
                     // console.log(key, result[idx][key]);
                     if (head!="is_deleted"){
-                        table += "<th>"+(head=="branch_id"?"#":head)+"</th>";
+                        table += "<th>"+(head=="admin_id"?"#":head)+"</th>";
                     }
                 });
                 table += "</tr></thead>";
@@ -167,33 +179,18 @@
                 table+="<tbody class='table-group-divider'>";
                 Object.keys(result).forEach(function(idx) {
                     // console.log(idx, result[idx]);
-                    let id = result[idx]['branch_id'];
+                    let id = result[idx]['admin_id'];
                     table+="<tr>";
                     Object.keys(result[idx]).forEach(function(key) {
                         // console.log(key, result[idx][key]);
-                        if (key!="is_deleted"){
-
-                            if(key=="images"){
-                                //
-
-                                var imges_string = "<img src='" + result[idx][key] + "' class='img-fluid'/>";
-                                table += "<td>"+imges_string+"</td>";
-                            }
-                            else{
-                                table += "<td>"+result[idx][key]+"</td>";
-                            }
-                        }else if(key=="created_time"){
-                            table += "<td>"+timestamp_DateTime(result[idx][key])+"</td>";
-                        }else if(key=="modified_time"){
-                            if(result[idx][key]){
-                                table += "<td>"+timestamp_DateTime(result[idx][key])+"</td>";
-                            }else{
-                                table += "<td>---</td>";
-                            }
+                        if (key=="img"){
+                            table += "<td><img width='100px' src='"+result[idx][key]+"'></td>";
+                        } else if (key!="is_deleted"){
+                            table += "<td>"+result[idx][key]+"</td>";
                         }
                     });
                         
-                    table+="<td><div class='btn-group'><button class='btn btn-sm btn-primary' onclick=\"branch_edit_init('"+id+"','"+result[idx]['location']+"','"+result[idx]['branch_name']+"','"+result[idx]['description']+"')\">Edit</button><button class='btn btn-sm btn-danger' onclick='branchDelete(\""+id+"\")'>Delete</button></div></td></tr>";
+                    table+="<td><div class='btn-group'><button class='btn btn-sm btn-primary' onclick=\"admin_edit_init('"+id+"','"+result[idx]['img']+"','"+result[idx]['category']+"','"+result[idx]['prod_name']+"','"+result[idx]['price']+"','"+result[idx]['description']+"')\">Edit</button><button class='btn btn-sm btn-danger' onclick='menuDelete(\""+id+"\")'>Delete</button></div></td></tr>";
                 });
 
                 table+="</tbody>";
@@ -204,5 +201,9 @@
 
     $(document).ready(function(){
         getTable();
+        $("#ed_img").change(()=>{
+            let x = $("#ed_img").val();
+            $("#ed_img_preview").attr("src",x);
+        });
     })
 </script>
