@@ -14,6 +14,7 @@
 
     <div class="container-fluid">
         <div class="row">
+            <!-- 侧边导览 -->
             <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
                 <div class="position-sticky pt-3 sidebar-sticky">
                     <ul class="nav flex-column">
@@ -71,20 +72,22 @@
                 </div>
             </nav>
 
+            <!-- 主框架 -->
             <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Dashboard</h1>
                 </div>
                 <main id="page">
+                    <!-- 盒子 -->
                 </main>
             </div>
 
         </div>
     </div>
-    <!-- <input type="datetime-local" id="bookingTime" value="2022-01-01 01:00" min="2022-01-01 01:00" max="2023-01-01 01:00"> -->
+
     <script>
         function load(path){
-            console.log("Loading : "+path);
+            console.log("Loading : <?=base_url("element?path=")?>"+path);
             $("#page").hide();
             $.get({
                 url: "<?=base_url("element?path=")?>"+path,
@@ -94,14 +97,15 @@
                 },
             });
         }
+        
         $(document).ready(function(){
             load("booking");
 
-            $("#nav-booking").click(function(){load("booking");});
-            $("#nav-menu")   .click(function(){load("menu");});
-            $("#nav-branch") .click(function(){load("branch");});
-            $("#nav-about")  .click(function(){load("about");});
-            $("#nav-admin")  .click(function(){load("admin");});
+            $("#nav-booking").click(()=>{load("booking");});
+            $("#nav-menu")   .click(()=>{load("menu");});
+            $("#nav-branch") .click(()=>{load("branch");});
+            $("#nav-about")  .click(()=>{load("about");});
+            $("#nav-admin")  .click(()=>{load("admin");});
         })
     </script>
 </body>

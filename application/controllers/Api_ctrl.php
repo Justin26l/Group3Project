@@ -5,12 +5,17 @@ class Api_ctrl extends CI_Controller
 {
 	
 
+
 	private $T_admin = ["admin_id","username","password","branch_id","superadmin"];
+<<<<<<< HEAD
 	private $T_booking = ["booking_id","name","person","book_branch","booking_time","created_time","comment"];
 	private $T_branch = ["branch_id","location","branch_name","description","is_deleted"];
+=======
+	private $T_booking = ["book_id","name","person","book_branch","booking_time","created_time","comment"];
+	private $T_branch = ["branch_id","location","branch_name","description","images","is_deleted"];
+>>>>>>> 2feafd3613f409cd9139a48dfb6a134f321f863a
 	private $T_menu = ["menu_id","img","category","prod_name","price","description","is_deleted"];
 	private $T_about = ["logo","company_name","description","customer_service_no","bussiness_name","bussiness_no"];
-
 
 	private $stat = ["ok",'error'];
 
@@ -76,7 +81,7 @@ class Api_ctrl extends CI_Controller
 		return true;
 	}
 	// ========== API ========== //
-	// ========== API ========== //
+	// ========== API ========== //-
 	// ========== API ========== //
 
 	public function api($action, $path){
@@ -86,7 +91,7 @@ class Api_ctrl extends CI_Controller
 			$error  = "";
 			$result = "";
 
-			// catch json post
+			// catch json post & assign to native post handler
 			if( isset($_SERVER["CONTENT_TYPE"]) && $_SERVER["CONTENT_TYPE"]=="application/json"){
 				$_POST = json_decode(file_get_contents("php://input"),1);
 			};
@@ -197,7 +202,6 @@ class Api_ctrl extends CI_Controller
 				case "about":
 					$this->load->model("About_model");
 					// if ($action == "create") {
-		
 					// 	$result = $this->About_model->create($post['create']);
 					// 	$this->response($status,$error,$result);
 					// } else 
@@ -211,7 +215,6 @@ class Api_ctrl extends CI_Controller
 						$result = $this->About_model->update($post['update_where'], $post['update']);
 						$this->response($status,$error,$result);
 					// } else if ($action == "delete") {
-		
 					// 	$result = $this->About_model->soft_delete($post['delete']);
 					// 	$this->response($status,$error,$result);
 					} else {
