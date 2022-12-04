@@ -4,7 +4,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 class Api_ctrl extends CI_Controller{
 
 	private $T_admin = ["admin_id","username","password","branch_id","superadmin"];
-	private $T_booking = ["book_id","name","person","book_branch","booking_time","status","created_time","comment"];
+	private $T_booking = ["book_id","name","person","book_branch","book_time","status","created_time","comment"];
 	private $T_branch = ["branch_id","location","branch_name","description","images","is_deleted"];
 	private $T_menu = ["menu_id","img","category","prod_name","price","description","is_deleted"];
 	private $T_about = ["logo","company_name","description","customer_service_no","bussiness_name","bussiness_no"];
