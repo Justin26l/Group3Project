@@ -25,7 +25,9 @@ class Api_ctrl extends CI_Controller {
 	];
 
 	private function response($status,$error,$result){
-		header('Access-Control-Allow-Origin: *');
+		header("Access-Control-Allow-Origin: *");
+		header("Access-Control-Allow-Headers: *");
+
 		header('Content-Type: application/json; charset=utf-8');
 		echo json_encode([
 			"status"=>$status,
@@ -63,6 +65,7 @@ class Api_ctrl extends CI_Controller {
 
 	private function validParam($input,$checkList){
 		$input = array_keys($input);
+
 		foreach($input as $i){
 			if(!in_array($i,$checkList)){
 				$status = $this->stat[1];
@@ -79,13 +82,14 @@ class Api_ctrl extends CI_Controller {
 	// ========== API ========== //
 
 	public function api($action, $path){
+
 		try {
 			$this->load->library('session');
 			$status = $this->stat[0];
 			$error  = "";
 			$result = "";
 
-			// catch json post
+			// catch json post & assign to native post handler
 			if( isset($_SERVER["CONTENT_TYPE"]) && $_SERVER["CONTENT_TYPE"]=="application/json"){
 				$_POST = json_decode(file_get_contents("php://input"),1);
 			};
@@ -125,16 +129,23 @@ class Api_ctrl extends CI_Controller {
 								$result = $this->Booking_model->create($post['create']);
 								$this->response($status,$error,$result);
 								return;
+							}else {
+								return;
 							};
 						} else {
 							$error  = $this->err[2];
 							$this->response($status,$error,$result);
 							return;
 						};
+						$this->response($status,$error,$result);
+						return;
 					} else if ($action == "read") {
+
 						if ($this->validParam($get,$this->T_booking)){
 							$result = $this->Booking_model->read($get, $readlimit, $order);
 							$this->response($status,$error,$result);
+							return;
+						}else {
 							return;
 						};
 					} else if ($action == "update") {
@@ -193,6 +204,8 @@ class Api_ctrl extends CI_Controller {
 							$result = $this->Menu_model->read($get, $readlimit, $order);
 							$this->response($status,$error,$result);
 							return;
+						}else {
+							return;
 						};
 					} else if ($action == "update") {
 						if(!$this->issuper()){return;};
@@ -223,6 +236,8 @@ class Api_ctrl extends CI_Controller {
 							$result = $this->Branch_model->read($get, $readlimit, $order);
 							$this->response($status,$error,$result);
 							return;
+						}else {
+							return;
 						};
 					} else if ($action == "update") {
 						if(!$this->issuper()){return;};
@@ -242,10 +257,17 @@ class Api_ctrl extends CI_Controller {
 					break;
 				case "about":
 					$this->load->model("About_model");
+					// if ($action == "create") {
+					// 	$result = $this->About_model->create($post['create']);
+					// 	$this->response($status,$error,$result);
+					return;
+					// } else 
 					if ($action == "read") {
 						if($this->validParam($get,$this->T_about)){
 							$result = $this->About_model->read($get, $readlimit, $order);
 							$this->response($status,$error,$result);
+							return;
+						}else {
 							return;
 						};
 					} else if ($action == "update") {
@@ -253,6 +275,10 @@ class Api_ctrl extends CI_Controller {
 						$result = $this->About_model->update($post['update_where'], $post['update']);
 						$this->response($status,$error,$result);
 						return;
+					// } else if ($action == "delete") {
+					// 	$result = $this->About_model->soft_delete($post['delete']);
+					// 	$this->response($status,$error,$result);
+					return;
 					} else {
 						$error = $this->err[1].$action;
 						$this->response($status,$error,$result);
@@ -270,6 +296,8 @@ class Api_ctrl extends CI_Controller {
 						if($this->validParam($get,$this->T_admin)){
 							$result = $this->Admin_model->read($get, $readlimit, $order);
 							$this->response($status,$error,$result);
+							return;
+						}else {
 							return;
 						};
 					} else if ($action == "update") {

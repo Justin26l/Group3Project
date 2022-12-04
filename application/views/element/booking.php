@@ -61,7 +61,6 @@
         });
     }
     function getTable(){
-
         $("#table").html(loader);
         let sort      = $("#sortby").val();
         let startdate = parseInt((new Date($("#date").val())).getTime() /1000);
@@ -71,6 +70,7 @@
         $.ajax({
             url : "<?=base_url("api/read/booking?".($admin['superadmin']!=1 ? "book_branch==".intval($admin['branch'])."&" : ""))?>"+Request, 
             success : ( data )=>{
+
                 let result = data['result'];
                 let table = "";
 

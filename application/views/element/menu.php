@@ -206,12 +206,13 @@
 
                 table+="</tbody>";
                 $( "#table" ).html( table );
+                $("#table").show(250);
             }
         );
         $("#table").show(250);
     }
 
-    $(document).ready(function(){
+    $(document).ready(()=>{
         getTable();
         $("#ed_img_preview").attr("src",$("#ed_img").val());
 
