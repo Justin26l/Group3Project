@@ -1,26 +1,32 @@
-<h2>Menu</h2>
+<h2>Setting</h2>
 
-<div class="table-responsive">
-
-    <p class="d-inline">Limit</p>
-
-    <button type="button" class="btn btn-sm btn-primary" onclick="table_create()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
-        </svg>
-    </button>
-
+<div id="QRbox">
+    <div class="d-inline-block rounded-4 shadow text-center p-3">
+        <div id="QR" style="width:200px; height:200px; margin: auto;"></div>
+        <input id="QRtxt" class="form-control my-2" value='{"branch_id":<?=$admin['branch']?>,"table":0}'>
+        <button type="button" class="btn btn-primary" onclick="download($('QR','#QR img').prop('src'))">Download</button>
+    </div>
 </div>
 
-<div id="menu_form" style="display:none">
-</div>
+<script type="text/javascript">
+    var QRcount = 0;
+    
+	function download(name,source){
+		const fileName = source.split('/').pop();
+		var element = document.createElement("a");
+		element.setAttribute("href", source);
+		element.setAttribute("download", fileName);
+		document.body.appendChild(element);
+		element.click();
+		element.remove();
+	}
 
-<script>
-    function table_create(){
-        console.log("table_create");
-    }
+    $(document).ready(()=>{
+        qrEl = new QRCode(document.querySelector('#QR'), {width: 200,height: 200});
+        qrEl.makeCode($("#QRtxt").val());
 
-    $(document).ready(function(){
-
-    })
+        $("#QRtxt").keyup(()=>{
+            qrEl.makeCode($("#QRtxt").val());
+        });
+    });
 </script>
