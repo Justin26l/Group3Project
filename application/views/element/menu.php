@@ -1,28 +1,30 @@
 <h2>Menu</h2>
-<p class="d-inline">Limit</p>
-<select id="limit" class="form-select-sm">
-    <option value=25>25</option>
-    <option value=50>50</option>
-    <option value=100>100</option>
-    <option value=150>150</option>
-    <option value=200>200</option>
-</select>
 
-<button type="button" class="btn btn-sm btn-primary" onclick="getTable()">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
-        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
-        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
-    </svg>
-</button>
+<div class="table-responsive">
 
-<button type="button" class="btn btn-sm btn-primary" onclick="menu_create_init()">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
-        <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
-    </svg>
-</button>
+    <p class="d-inline">Limit</p>
+    <select id="limit" class="form-select-sm">
+        <option value=25>25</option>
+        <option value=50>50</option>
+        <option value=100>100</option>
+        <option value=150>150</option>
+        <option value=200>200</option>
+    </select>
 
-<div class="table-responsive shadow">
-    <table id="table" class="table table-striped table-sm text-center mb-0">
+    <button type="button" class="btn btn-sm btn-primary" onclick="getTable()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+            <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+        </svg>
+    </button>
+
+    <button type="button" class="btn btn-sm btn-primary" onclick="menu_create_init()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+        </svg>
+    </button>
+
+    <table id="table" class="table table-striped table-sm text-center mb-0 shadow">
         <thead>
             <tr>
                 <th>#</th>
@@ -42,7 +44,7 @@
 
 <div id="menu_form" style="display:none">
     <h2 id="menu_form_title">Menu Edit</h2>
-    <img id="ed_img_preview"  width="100px">
+    <img id="ed_img_preview"  style="height:200px">
     
     <div class="form-floating mb-3">
         <input type="text" class="form-control" id="ed_menu_id" disabled>
@@ -152,6 +154,7 @@
             },
         });
     }
+
     function menuDelete(id){
         $.ajax({
             type: "POST",
@@ -166,12 +169,12 @@
             },
         });
     }
+
     function getTable(){
-        $("#menu_form,#table").hide();
+        $("#menu_form, #table").hide();
         $.get(
-            "<?=base_url("api/read/menu?limit=")?>"+$("#limit").val(), 
-            ( data )=>{
-                console.log(data);
+            url="<?=base_url("api/read/menu?limit=")?>"+$("#limit").val(),
+            success = (data)=>{
                 let result = data['result'];
                 let table = "";
                 // console.log(Object.keys(result[0]));
@@ -206,13 +209,15 @@
                 $("#table").show(250);
             }
         );
+        $("#table").show(250);
     }
 
     $(document).ready(()=>{
         getTable();
+        $("#ed_img_preview").attr("src",$("#ed_img").val());
+
         $("#ed_img").change(()=>{
-            let x = $("#ed_img").val();
-            $("#ed_img_preview").attr("src",x);
+            $("#ed_img_preview").attr("src",$("#ed_img").val());
         });
     })
 </script>

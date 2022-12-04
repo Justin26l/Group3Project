@@ -4,6 +4,8 @@ defined('BASEPATH') or exit('No direct script access allowed');
 class Mod_ctrl extends CI_Controller
 {
 
+	private $TopSecret = "ヒグチアイ / 悪魔の子 (アニメスペシャルVer.) | Ai Higuchi “Akuma no Ko” Anime Special Ver. - Ai Higuchi - https://www.youtube.com/watch?v=WPl10ZrhCtk";
+	
 	public function login(){
 		$x=$this->input->get('x',1);
 		$this->load->view('head',['title'=>'login']);
@@ -12,10 +14,9 @@ class Mod_ctrl extends CI_Controller
 
 	public function loginverify(){
 		$post = $this->input->post(NULL,TRUE);
-		// print_r($post);
-		// exit;
+		$hash_pass = hash_hmac('sha256', $post['password'], $this->TopSecret);
 		$this->load->model("Admin_model");
-		$valid_admin = $this->Admin_model->read(['username'=>$post['username'],'password'=>$post['password']]);
+		$valid_admin = $this->Admin_model->read(['username'=>$post['username'],'password'=>$hash_pass]);
 		if($valid_admin){
 			$this->load->library('session');
 			$this->session->set_userdata('mod',['admin_id'=>intval($valid_admin[0]['admin_id'])]);
@@ -53,6 +54,12 @@ class Mod_ctrl extends CI_Controller
 			switch($path){
 				case"booking":
 					$this->load->view('element/booking',['admin'=>$admin]);
+					break;
+				case"order":
+					$this->load->view('element/order',['admin'=>$admin]);
+					break;
+				case"setting":
+					$this->load->view('element/setting',['admin'=>$admin]);
 					break;
 				case"menu":
 					$this->load->view('element/menu',['admin'=>$admin]);

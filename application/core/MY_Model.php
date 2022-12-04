@@ -11,12 +11,15 @@ class MY_Model extends CI_Model{
     }
     
 
-    public function create($insert){
-        return $this->db->insert($this->table,$insert);
+    public function create($data){
+        return $this->db->insert($this->table,$data);
     }
 
 
-    public function read($where, $limit=99){
+    public function read($where, $limit=99, $order=null){
+        if($order!=null){
+            $this->db->order_by($order);
+        }
         return $this->db->get_where($this->table, $where, $limit)->result_array();
     }
 

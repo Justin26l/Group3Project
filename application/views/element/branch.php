@@ -147,7 +147,6 @@
 
     function getTable(){
         $("#branch_form,#table").hide();
-        $("#table").show(250);
         $.get(
             "<?=base_url("api/read/branch?branch_id=".intval($admin['branch_id']))."limit="?>"+$("#limit").val(), 
             function( data ) {
@@ -200,6 +199,7 @@
                 $( "#table" ).html( table );
             }
         );
+        $("#table").show(250);
     }
 
     $(document).ready(function(){

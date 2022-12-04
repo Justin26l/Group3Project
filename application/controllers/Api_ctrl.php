@@ -1,22 +1,27 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Api_ctrl extends CI_Controller{
+class Api_ctrl extends CI_Controller {
 
-	private $T_admin = ["admin_id","username","password","branch_id","superadmin"];
-	private $T_booking = ["book_id","name","person","book_branch","book_time","status","created_time","comment"];
-	private $T_branch = ["branch_id","location","branch_name","description","images","is_deleted"];
-	private $T_menu = ["menu_id","img","category","prod_name","price","description","is_deleted"];
-	private $T_about = ["logo","company_name","description","customer_service_no","bussiness_name","bussiness_no"];
+	private $T_admin   = ["admin_id","username","password","branch_id","superadmin"];
+	private $T_booking = ["book_id","name","person","book_branch","book_time","status","created_time","comment","created_time>","created_time<"];
+	private $T_order   = ["order_id","order_branch","deliver","address","order_by","items","total","created_time","status","created_time>","created_time<"];
+	private $T_branch  = ["branch_id","location","branch_name","description","images","is_deleted"];
+	private $T_menu    = ["menu_id","img","category","prod_name","price","description","is_deleted"];
+	private $T_about   = ["logo","company_name","description","customer_service_no","bussiness_name","bussiness_no"];
 
-	private $stat = ["ok",'error'];
+	private $stat = [
+		"ok",
+		'error'
+	];
 
 	private $err = [
 		"Unvalid Path.",//url
 		"Unvalid Action-",//url
 		"Unvalid Param-",//get
 		"Post Fields Is Empty.",//post
-		"Permission Denied."
+		"Permission Denied.",//mod session required
+		"Required Higher Permission."//superadmin required
 	];
 
 	private function response($status,$error,$result){
@@ -29,7 +34,6 @@ class Api_ctrl extends CI_Controller{
 			"error"=>$error,
 			"result"=>$result,
 		]);
-		return;
 	}
 
 	// ========== Verify ========== //
@@ -37,8 +41,7 @@ class Api_ctrl extends CI_Controller{
 	private function ismod(){
 		$this->load->library('session');
 		if(!$this->session->has_userdata('mod')){
-			$error = $this->err[4];
-			$this->response($this->stat[1],$this->err[5],"");
+			$this->response($this->stat[1],$this->err[4],"");
 			return false;
 		} else {
 			return true;
@@ -52,9 +55,8 @@ class Api_ctrl extends CI_Controller{
 			$session = $this->session->userdata('mod');
 			$admin = $this->Admin_model->read(['admin_id'=>$session['admin_id']])[0];
 			if(! $admin['superadmin']===1){
-				$error = $this->err[4];
 				$this->response($this->stat[1],$this->err[5],"");
-				return;
+				return false;
 			} else {
 				return true;
 			}
@@ -74,8 +76,9 @@ class Api_ctrl extends CI_Controller{
 		};
 		return true;
 	}
+
 	// ========== API ========== //
-	// ========== API ========== //-
+	// ========== API ========== //
 	// ========== API ========== //
 
 	public function api($action, $path){
@@ -95,13 +98,18 @@ class Api_ctrl extends CI_Controller{
 			$post = $this->input->post(NULL, TRUE);
 			$get = $this->input->get(NULL, TRUE);
 
-			// format if client ask for limit
+			// format filter
 			$readlimit = 99;
+			$order = null;
 			if(isset($get[0])){unset($get[0]);};
 			if(isset($get['limit'])){
 				$readlimit = $get["limit"];
 				unset($get["limit"]);
 			};
+			if(isset($get["order"])){
+				$order = $get["order"];
+				unset($get["order"]);
+			}
 			
 			// post but empty body
 			if ( $_SERVER['REQUEST_METHOD'] === 'POST' && empty($post)) {
@@ -126,13 +134,15 @@ class Api_ctrl extends CI_Controller{
 							};
 						} else {
 							$error  = $this->err[2];
+							$this->response($status,$error,$result);
+							return;
 						};
 						$this->response($status,$error,$result);
 						return;
 					} else if ($action == "read") {
 
 						if ($this->validParam($get,$this->T_booking)){
-							$result = $this->Booking_model->read($get, $readlimit);
+							$result = $this->Booking_model->read($get, $readlimit, $order);
 							$this->response($status,$error,$result);
 							return;
 						}else {
@@ -143,11 +153,39 @@ class Api_ctrl extends CI_Controller{
 						$result = $this->Booking_model->update($post['update_where'], $post['update']);
 						$this->response($status,$error,$result);
 						return;
-					// } else if ($action == "delete") {
-		
-					// 	$result = $this->Booking_model->soft_delete($post['delete']);
-					// 	$this->response($status,$error,$result);
-					// return;
+					} else {
+						$error = $this->err[1].$action;
+						$this->response($status,$this->err[1].$action,$result);
+					};
+					break;
+				case "order":
+					$this->load->model("Order_model");
+					if ($action == "create") {
+						$post['create']['status']="pending";
+						$post['create']['created_time']=time();
+						if(isset($post['create'])){
+							if ($this->validParam($post['create'],$this->T_order)){
+								$post['create']['items'] = json_encode($post['create']['items']);
+								$result = $this->Order_model->create($post['create']);
+								$this->response($status,$error,$result);
+								return;
+							};
+						} else {
+							$error  = $this->err[2];
+							$this->response($status,$error,$result);
+							return;
+						};
+					} else if ($action == "read") {
+						if ($this->validParam($get,$this->T_order)){
+							$result = $this->Order_model->read($get, $readlimit, $order);
+							$this->response($status,$error,$result);
+							return;
+						};
+					} else if ($action == "update") {
+						if(!$this->ismod()){return;};
+						$result = $this->Order_model->update($post['update_where'], $post['update']);
+						$this->response($status,$error,$result);
+						return;
 					} else {
 						$error = $this->err[1].$action;
 						$this->response($status,$this->err[1].$action,$result);
@@ -163,7 +201,7 @@ class Api_ctrl extends CI_Controller{
 					} else if ($action == "read") {
 						if(!isset($get["is_deleted"])){$get["is_deleted"] = 0;}
 						if($this->validParam($get,$this->T_menu)){
-							$result = $this->Menu_model->read($get, $readlimit);
+							$result = $this->Menu_model->read($get, $readlimit, $order);
 							$this->response($status,$error,$result);
 							return;
 						}else {
@@ -195,7 +233,7 @@ class Api_ctrl extends CI_Controller{
 					} else if ($action == "read") {
 						if(!isset($get["is_deleted"])){$get["is_deleted"] = 0;}
 						if($this->validParam($get,$this->T_branch)){
-							$result = $this->Branch_model->read($get, $readlimit);
+							$result = $this->Branch_model->read($get, $readlimit, $order);
 							$this->response($status,$error,$result);
 							return;
 						}else {
@@ -226,7 +264,7 @@ class Api_ctrl extends CI_Controller{
 					// } else 
 					if ($action == "read") {
 						if($this->validParam($get,$this->T_about)){
-							$result = $this->About_model->read($get, $readlimit);
+							$result = $this->About_model->read($get, $readlimit, $order);
 							$this->response($status,$error,$result);
 							return;
 						}else {
@@ -249,15 +287,14 @@ class Api_ctrl extends CI_Controller{
 					break;
 				case "admin":
 					$this->load->model("Admin_model");
-					if(!$this->issuper()){return;};
-					
+					if(!$this->issuper()){return false;};
 					if ($action == "create") {
 						$result = $this->Admin_model->create($post['create']);
 						$this->response($status,$error,$result);
 						return;
 					} else if ($action == "read") {
 						if($this->validParam($get,$this->T_admin)){
-							$result = $this->Admin_model->read($get, $readlimit);
+							$result = $this->Admin_model->read($get, $readlimit, $order);
 							$this->response($status,$error,$result);
 							return;
 						}else {
@@ -284,7 +321,7 @@ class Api_ctrl extends CI_Controller{
 					break;
 			}
 		} catch (Exception $e) {
-			echo 'Message: ' . $e; //->getMessage();
+			echo 'Message: ' . $e->getMessage();
 		}
 	}
 }

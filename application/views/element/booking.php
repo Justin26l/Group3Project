@@ -1,11 +1,21 @@
 <h2>Booking</h2>
-<p class="d-inline">Limit</p>
+
+<p class="d-inline">Date</p>
+<input id="date" type="date" value="">
+
+<p class="ms-4 d-inline">Filter</p>
 <select id="limit" class="form-select-sm">
-    <option value=25>25</option>
-    <option value=50>50</option>
-    <option value=100>100</option>
-    <option value=150>150</option>
-    <option value=200>200</option>
+    <option value=100 selected>100 row</option>
+    <option value=250>250 row</option>
+    <option value=500>500 row</option>
+    <option value=750>750 row</option>
+    <option value=1000>1000 row</option>
+    <option value=1000>2000 row</option>
+</select>
+
+<select id="sortby" class="form-select-sm">
+    <option value="DESC">Newest Order</option>
+    <option value="ASC">Oldest Order</option>
 </select>
 
 <button type="button" class="btn btn-sm btn-primary" onclick="getTable()">
@@ -35,19 +45,6 @@
 </div>
 
 <script>
-    
-
-    function timestamp_DateTime(timestamp){
-        var a = new Date(timestamp * 1000);
-        var year = a.getFullYear();
-        var month = a.getMonth()+1;
-        var date = a.getDate();
-        var hour = a.getHours();
-        var min = a.getMinutes();
-        var sec = a.getSeconds();
-        var time = year + '-' + month + '-' + date + ' ' + hour + ':' + min + ':' + sec ;
-        return time;
-    }
 
     function bookUpdate(id,status){
         $.ajax({
@@ -64,14 +61,24 @@
         });
     }
     function getTable(){
-        $("#table").hide();
-        $("#table").show(250);
-        $.get(
-            "<?=base_url("api/read/booking?book_branch=".intval($admin['branch_id']))."&limit="?>"+$("#limit").val(), 
-            function( data ) {
-                // console.log(data);
+        $("#table").html(loader);
+        let sort      = $("#sortby").val();
+        let startdate = parseInt((new Date($("#date").val())).getTime() /1000);
+        let enddate   = startdate+86400;
+        let Request   = "created_time>="+(startdate+tzoffset)+"&created_time<="+(enddate+tzoffset)+"&limit="+$("#limit").val()+"&order=created_time "+sort;
+
+        $.ajax({
+            url : "<?=base_url("api/read/booking?".($admin['superadmin']!=1 ? "book_branch==".intval($admin['branch'])."&" : ""))?>"+Request, 
+            success : ( data )=>{
+
                 let result = data['result'];
                 let table = "";
+
+                if(result.length == 0){
+                    $( "#table" ).html( "<h1>No Data Found !<h1/>" );
+                    return;
+                }
+
                 // console.log(Object.keys(result[0]));
                 table += "<thead><tr>";
                 Object.keys(result[0]).forEach(function(head) {
@@ -79,45 +86,42 @@
                     table += "<th>"+(head=="book_id"?"#":head)+"</th>";
                 });
                 table += "</tr></thead>";
-
                 table+="<tbody class='table-group-divider'>";
                 Object.keys(result).forEach(function(idx) {
                     // console.log(idx, result[idx]);
                     table+="<tr>";
                     Object.keys(result[idx]).forEach(function(key) {
-                        // console.log(key, result[idx][key]);
+                        let itm = result[idx][key];
                         if (key=="status"){
-                            if (result[idx][key]=='accept'){
-                                table += "<td class='bg-success bg-opacity-75 text-white'>"+result[idx][key]+"</td>";
-                            }else if(result[idx][key]=='denied'){
-                                table += "<td class='bg-danger bg-opacity-75 text-white'>"+result[idx][key]+"</td>";
-                            }else if(result[idx][key]=='pending'){
-                                table += "<td class='btn-group btn-group-sm'><button type='button' class='btn btn-success' onclick='bookUpdate("+result[idx]['book_id']+",\"accept\")'>Accept</button><button type='button' class='btn btn-danger' onclick='bookUpdate("+result[idx]['book_id']+",\"denied\")'>Denied</button></td>";
+                            if(itm=='pending'){
+                                table += "<td class='bg-warning'><div class='btn-group btn-group'><button type='button' class='btn btn-success' onclick='bookUpdate("+result[idx]['book_id']+",\"accept\")'>Accept</button><button type='button' class='btn btn-danger' onclick='bookUpdate("+result[idx]['book_id']+",\"denied\")'>Denied</button></div></td>";
+                            }else if (itm=='accept'){
+                                table += "<td class='bg-success bg-opacity-75 text-white'>"+itm+"</td>";
+                            }else if(itm=='denied'){
+                                table += "<td class='bg-danger bg-opacity-75 text-white'>"+itm+"</td>";
+                            }else{
+                                table += "<td>"+itm+"</td>";
                             };
                         }else if(key=="created_time"){
-                            table += "<td>"+timestamp_DateTime(result[idx][key])+"</td>";
-                        }else if(key=="modified_time"){
-                            if(result[idx][key]){
-                                table += "<td>"+timestamp_DateTime(result[idx][key])+"</td>";
-                            }else{
-                                table += "<td>---</td>";
-                            }
-                            
+                            table += "<td>"+timestamp_DateTime(itm)+"</td>";
                         }else{
-                            table += "<td>"+result[idx][key]+"</td>";
+                            table += "<td>"+itm+"</td>";
                         }
                     });
                     table+="</tr>";
                 });
                 table+="</tbody>";
                 $( "#table" ).html( table );
+            },
+            error : ()=>{
+                $( "#table" ).html( "Request Error !" );
             }
-        );
+        });
     }
 
     $(document).ready(function(){
-        $("#bookingTime").change(function(){console.log($("#bookingTime").val())})
+        document.querySelector("#date").value = new Date(Date.now()-tzoffset* 1000).toISOString().slice(0, 10);
         getTable();
-        // console.log(timestamp_DateTime(Date.now()/1000))
+        $("#date, #limit, #sortby").change(()=>{getTable()});
     })
 </script>
