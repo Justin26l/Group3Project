@@ -1,13 +1,10 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Api_ctrl extends CI_Controller
-{
-	
-
+class Api_ctrl extends CI_Controller{
 
 	private $T_admin = ["admin_id","username","password","branch_id","superadmin"];
-	private $T_booking = ["book_id","name","person","book_branch","booking_time","created_time","comment"];
+	private $T_booking = ["book_id","name","person","book_branch","booking_time","status","created_time","comment"];
 	private $T_branch = ["branch_id","location","branch_name","description","images","is_deleted"];
 	private $T_menu = ["menu_id","img","category","prod_name","price","description","is_deleted"];
 	private $T_about = ["logo","company_name","description","customer_service_no","bussiness_name","bussiness_no"];
@@ -23,7 +20,9 @@ class Api_ctrl extends CI_Controller
 	];
 
 	private function response($status,$error,$result){
-		header('Access-Control-Allow-Origin: *');
+		header("Access-Control-Allow-Origin: *");
+		header("Access-Control-Allow-Headers: *");
+
 		header('Content-Type: application/json; charset=utf-8');
 		echo json_encode([
 			"status"=>$status,
@@ -79,6 +78,7 @@ class Api_ctrl extends CI_Controller
 	// ========== API ========== //
 
 	public function api($action, $path){
+
 		try {
 			$this->load->library('session');
 			$status = $this->stat[0];
@@ -119,24 +119,33 @@ class Api_ctrl extends CI_Controller
 							if ($this->validParam($post['create'],$this->T_booking)){
 								$result = $this->Booking_model->create($post['create']);
 								$this->response($status,$error,$result);
+								return;
+							}else {
+								return;
 							};
 						} else {
 							$error  = $this->err[2];
 						};
 						$this->response($status,$error,$result);
+						return;
 					} else if ($action == "read") {
 						if ($this->validParam($get,$this->T_booking)){
 							$result = $this->Booking_model->read($get, $readlimit);
 							$this->response($status,$error,$result);
+							return;
+						}else {
+							return;
 						};
 					} else if ($action == "update") {
 						if(!$this->ismod()){return;};
 						$result = $this->Booking_model->update($post['update_where'], $post['update']);
 						$this->response($status,$error,$result);
+						return;
 					// } else if ($action == "delete") {
 		
 					// 	$result = $this->Booking_model->soft_delete($post['delete']);
 					// 	$this->response($status,$error,$result);
+					// return;
 					} else {
 						$error = $this->err[1].$action;
 						$this->response($status,$this->err[1].$action,$result);
@@ -148,23 +157,30 @@ class Api_ctrl extends CI_Controller
 						if(!$this->issuper()){return;};
 						$result = $this->Menu_model->create($post['create']);
 						$this->response($status,$error,$result);
+						return;
 					} else if ($action == "read") {
 						if(!isset($get["is_deleted"])){$get["is_deleted"] = 0;}
 						if($this->validParam($get,$this->T_menu)){
 							$result = $this->Menu_model->read($get, $readlimit);
 							$this->response($status,$error,$result);
+							return;
+						}else {
+							return;
 						};
 					} else if ($action == "update") {
 						if(!$this->issuper()){return;};
 						$result = $this->Menu_model->update($post['update_where'], $post['update']);
 						$this->response($status,$error,$result);
+						return;
 					} else if ($action == "delete") {
 						if(!$this->issuper()){return;};
 						$result = $this->Menu_model->soft_delete($post['delete']);
 						$this->response($status,$error,$result);
+						return;
 					} else {
 						$error = $this->err[1].$action;
 						$this->response($status,$error,$result);
+						return;
 					};
 					break;
 				case "branch":
@@ -173,23 +189,30 @@ class Api_ctrl extends CI_Controller
 						if(!$this->issuper()){return;};
 						$result = $this->Branch_model->create($post['create']);
 						$this->response($status,$error,$result);
+						return;
 					} else if ($action == "read") {
 						if(!isset($get["is_deleted"])){$get["is_deleted"] = 0;}
 						if($this->validParam($get,$this->T_branch)){
 							$result = $this->Branch_model->read($get, $readlimit);
 							$this->response($status,$error,$result);
+							return;
+						}else {
+							return;
 						};
 					} else if ($action == "update") {
 						if(!$this->issuper()){return;};
 						$result = $this->Branch_model->update($post['update_where'], $post['update']);
 						$this->response($status,$error,$result);
+						return;
 					} else if ($action == "delete") {
 						if(!$this->issuper()){return;};
 						$result = $this->Branch_model->soft_delete($post['delete']);
 						$this->response($status,$error,$result);
+						return;
 					} else {
 						$error = $this->err[1].$action;
 						$this->response($status,$error,$result);
+						return;
 					};
 					break;
 				case "about":
@@ -197,22 +220,29 @@ class Api_ctrl extends CI_Controller
 					// if ($action == "create") {
 					// 	$result = $this->About_model->create($post['create']);
 					// 	$this->response($status,$error,$result);
+					return;
 					// } else 
 					if ($action == "read") {
 						if($this->validParam($get,$this->T_about)){
 							$result = $this->About_model->read($get, $readlimit);
 							$this->response($status,$error,$result);
+							return;
+						}else {
+							return;
 						};
 					} else if ($action == "update") {
 						if(!$this->issuper()){return;};
 						$result = $this->About_model->update($post['update_where'], $post['update']);
 						$this->response($status,$error,$result);
+						return;
 					// } else if ($action == "delete") {
 					// 	$result = $this->About_model->soft_delete($post['delete']);
 					// 	$this->response($status,$error,$result);
+					return;
 					} else {
 						$error = $this->err[1].$action;
 						$this->response($status,$error,$result);
+						return;
 					};
 					break;
 				case "admin":
@@ -222,25 +252,33 @@ class Api_ctrl extends CI_Controller
 					if ($action == "create") {
 						$result = $this->Admin_model->create($post['create']);
 						$this->response($status,$error,$result);
+						return;
 					} else if ($action == "read") {
 						if($this->validParam($get,$this->T_admin)){
 							$result = $this->Admin_model->read($get, $readlimit);
 							$this->response($status,$error,$result);
+							return;
+						}else {
+							return;
 						};
 					} else if ($action == "update") {
 						$result = $this->Admin_model->update($post['update_where'], $post['update']);
 						$this->response($status,$error,$result);
+						return;
 					} else if ($action == "delete") {
 						$result = $this->Admin_model->soft_delete($post['delete']);
 						$this->response($status,$error,$result);
+						return;
 					} else {
 						$error = $this->err[1].$action;
 						$this->response($status,$error,$result);
+						return;
 					};
 					break;
 				default:
 					$error = $this->err[0];
 					$this->response($status,$error,$result);
+					return;
 					break;
 			}
 		} catch (Exception $e) {
