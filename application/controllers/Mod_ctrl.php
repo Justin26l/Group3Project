@@ -58,6 +58,9 @@ class Mod_ctrl extends CI_Controller
 				case"order":
 					$this->load->view('element/order',['admin'=>$admin]);
 					break;
+				case"setting":
+					$this->load->view('element/setting',['admin'=>$admin]);
+					break;
 				case"menu":
 					$this->load->view('element/menu',['admin'=>$admin]);
 					break;
