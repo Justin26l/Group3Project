@@ -12,6 +12,8 @@ class Mod_ctrl extends CI_Controller
 
 	public function loginverify(){
 		$post = $this->input->post(NULL,TRUE);
+		// print_r($post);
+		// exit;
 		$this->load->model("Admin_model");
 		$valid_admin = $this->Admin_model->read(['username'=>$post['username'],'password'=>$post['password']]);
 		if($valid_admin){

@@ -6,7 +6,7 @@ class Api_ctrl extends CI_Controller
 	
 
 	private $T_admin = ["admin_id","username","password","branch_id","superadmin"];
-	private $T_booking = ["booking_id","name","mobile","people","branch_id","booking_time","created_time","comment"];
+	private $T_booking = ["booking_id","name","person","book_branch","booking_time","created_time","comment"];
 	private $T_branch = ["branch_id","location","branch_name","description","is_deleted"];
 	private $T_menu = ["menu_id","img","category","prod_name","price","description","is_deleted"];
 	private $T_about = ["logo","company_name","description","customer_service_no","bussiness_name","bussiness_no"];
@@ -64,6 +64,7 @@ class Api_ctrl extends CI_Controller
 
 	private function validParam($input,$checkList){
 		$input = array_keys($input);
+
 		foreach($input as $i){
 			if(!in_array($i,$checkList)){
 				$status = $this->stat[1];
@@ -125,6 +126,7 @@ class Api_ctrl extends CI_Controller
 						};
 						$this->response($status,$error,$result);
 					} else if ($action == "read") {
+
 						if ($this->validParam($get,$this->T_booking)){
 							$result = $this->Booking_model->read($get, $readlimit);
 							$this->response($status,$error,$result);
