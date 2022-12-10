@@ -24,7 +24,6 @@ class Mod_ctrl extends CI_Controller
 		}else{
 			header('Location: '.base_url('?x=Unvalid User.'));
 		}
-	
 	}
 
 	public function dashboard(){

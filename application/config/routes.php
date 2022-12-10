@@ -16,3 +16,5 @@ $route['booking'] = "Mod_ctrl/booking";
 $route['logout'] = "Mod_ctrl/logout";
 
 $route['api/(:any)/(:any)'] = "Api_ctrl/api/$1/$2";
+
+$route['test'] = 'Test_ctrl/test';
