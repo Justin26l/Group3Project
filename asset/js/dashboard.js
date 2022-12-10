@@ -10,3 +10,10 @@ function timestamp_DateTime(timestamp){
     var time = year + '-' + month + '-' + date + ' ' + hour + ':' + min + ':' + sec ;
     return time;
 }
+
+function Date_Timestamp(){
+    var myDate = "26-02-2012";
+    myDate = myDate.split("-");
+    var newDate = new Date( myDate[2], myDate[1] - 1, myDate[0]);
+    console.log(newDate.getTime());
+}

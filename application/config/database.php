@@ -76,15 +76,9 @@ $query_builder = TRUE;
 $db['default'] = array(
 	'dsn'	=> '',
 	'hostname' => 'localhost',
-<<<<<<< Updated upstream
-	'username' => 'root',
-	'password' => '',
-	'database' => 'group3database',
-=======
 	'username' => 'group3database',
 	'password' => '123123',
 	'database' => '',
->>>>>>> Stashed changes
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
