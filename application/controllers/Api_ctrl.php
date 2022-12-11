@@ -82,7 +82,7 @@ class Api_ctrl extends CI_Controller {
 	// ========== API ========== //
 
 	public function api($action, $path){
-
+		
 		try {
 			$this->load->library('session');
 			$status = $this->stat[0];
@@ -115,7 +115,6 @@ class Api_ctrl extends CI_Controller {
 			if ( $_SERVER['REQUEST_METHOD'] === 'POST' && empty($post)) {
 				$error = $this->err[3];
 			};
-
 			// api
 			switch ($path) {
 				case "booking":
@@ -260,7 +259,7 @@ class Api_ctrl extends CI_Controller {
 					// if ($action == "create") {
 					// 	$result = $this->About_model->create($post['create']);
 					// 	$this->response($status,$error,$result);
-					return;
+					// return;
 					// } else 
 					if ($action == "read") {
 						if($this->validParam($get,$this->T_about)){
