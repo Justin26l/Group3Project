@@ -5,7 +5,7 @@ class Api_ctrl extends CI_Controller {
 
 	private $T_admin   = ["admin_id","username","password","branch_id","superadmin"];
 	private $T_booking = ["book_id","name","person","book_branch","book_time","status","created_time","comment","created_time>","created_time<"];
-	private $T_order   = ["order_id","order_branch","deliver","address","order_by","items","total","created_time","status","created_time>","created_time<"];
+	private $T_order   = ["order_id","order_branch","deliver","address","order_by","items","total","created_time","status","created_time","created_time<"];
 	private $T_branch  = ["branch_id","location","branch_name","description","images","is_deleted"];
 	private $T_menu    = ["menu_id","img","category","prod_name","price","description","is_deleted"];
 	private $T_about   = ["logo","company_name","description","customer_service_no","bussiness_name","bussiness_no"];
@@ -64,6 +64,7 @@ class Api_ctrl extends CI_Controller {
 	}
 
 	private function validParam($input,$checkList){
+		
 		$input = array_keys($input);
 
 		foreach($input as $i){
@@ -90,8 +91,16 @@ class Api_ctrl extends CI_Controller {
 			$result = "";
 
 			// catch json post & assign to native post handler
+			header('Content-Type: application/json; charset=utf-8');
+			header("Access-Control-Allow-Origin: *");
+			header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept");
+	
 			if( isset($_SERVER["CONTENT_TYPE"]) && $_SERVER["CONTENT_TYPE"]=="application/json"){
-				$_POST = json_decode(file_get_contents("php://input"),1);
+				
+				//$_POST = json_decode(file_get_contents("php://input"),1);
+				$_POST = array_merge($_POST, (array) json_decode(trim(file_get_contents('php://input')), true));
+
+				
 			};
 			
 			// catch all input
@@ -119,13 +128,23 @@ class Api_ctrl extends CI_Controller {
 			switch ($path) {
 				case "booking":
 					$this->load->model("Booking_model");
+								
 					if ($action == "create") {
+
 						$post['create']['status']="pending";
 						$post['create']['created_time']=time();
 
 						if(isset($post['create'])){
-							if ($this->validParam($post['create'],$this->T_booking)){
+							if (
+								$this->validParam($post['create'],$this->T_booking) && 
+								(isset($_POST) && !empty($_POST))
+							){
+								
+
+								$post['create'] = array_merge($post['create'],$_POST);
+
 								$result = $this->Booking_model->create($post['create']);
+								
 								$this->response($status,$error,$result);
 								return;
 							}else {
@@ -142,6 +161,7 @@ class Api_ctrl extends CI_Controller {
 
 						if ($this->validParam($get,$this->T_booking)){
 							$result = $this->Booking_model->read($get, $readlimit, $order);
+							
 							$this->response($status,$error,$result);
 							return;
 						}else {
