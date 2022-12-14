@@ -43,15 +43,26 @@
 <div id="branch_form" style="display:none">
     <br>
     <h2 id="branch_form_title">Branch Edit</h2>
-    
+
+    <img id="imgpreview" style="height:200px;">
+
     <div class="form-floating mb-3">
         <input type="text" class="form-control" id="ed_branch_id" disabled>
         <label for="ed_branch_id">id</label>
     </div>
-    <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="ed_location">
-        <label for="ed_location">Location</label>
-    </div>
+
+    <form enctype="multipart/form-data" class="row mb-3 mx-1">
+        <div class="col-5 border border-1 rounded-3">
+            <input name="file" type="file" class="mt-1"/>
+            <input type="button" id="button" value="Upload" class="mt-1"/>
+        </div>
+        <div class="col-6">
+            <div class="form-floating">
+                <input type="text" class="form-control" id="ed_branch_img">
+                <label for="ed_branch_img">Branch Image</label>
+            </div>
+        </div>
+    </form>
     <div class="form-floating mb-3">
         <input type="text" class="form-control" id="ed_branch_name">
         <label for="ed_branch_name">Branch Name</label>
@@ -59,6 +70,10 @@
     <div class="form-floating mb-3">
         <textarea type="text" class="form-control" id="ed_description"></textarea>
         <label for="ed_description">Description</label>
+    </div>
+    <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="ed_location">
+        <label for="ed_location">Location</label>
     </div>
     <div class="text-end">
         <button id="branch_form_btn" type="button" class="btn btn-primary rounded-3 px-4" onclick="branchEdit()">Save</button>
@@ -74,11 +89,14 @@
 
         $("#ed_branch_id").val("");
         $("#ed_location").val("");
+        $("#ed_branch_img").val("");
+        $("#imgpreview").attr('src','');
         $("#ed_branch_name").val("");
         $("#ed_description").val("");
+        $("#ed_contact").val('');
     }
 
-    function branch_edit_init(id,loc,name,desc){
+    function branch_edit_init(id,loc,name,desc,img,cont){
         $("#table").hide();
         $("#branch_form").show(250);
         $("#branch_form_title").html("Edit");
@@ -86,8 +104,11 @@
 
         $("#ed_branch_id").val(id);
         $("#ed_location").val(loc);
+        $("#ed_branch_img").val(img);
+        $("#imgpreview").attr('src','<?=base_url()?>'+img);
         $("#ed_branch_name").val(name);
         $("#ed_description").val(desc);
+        $("#ed_contact").val(cont);
     }
     
     // fetch
@@ -98,9 +119,11 @@
             contentType : "application/json",
             data: JSON.stringify({
                 "create":{
-                    "location" : $("#ed_location").val(),
+                    "img" : $("#ed_branch_img").val(),
                     "branch_name" : $("#ed_branch_name").val(),
                     "description" : $("#ed_description").val(),
+                    "location" : $("#ed_location").val(),
+                    "contact" : $("#ed_contact").val(),
                 }
             }),
             success: function(respone){
@@ -118,19 +141,24 @@
             data: JSON.stringify({
                 "update_where":{"branch_id":$("#ed_branch_id").val()},
                 "update":{
-                    "location" : $("#ed_location").val(),
+                    "img" : $("#ed_branch_img").val(),
                     "branch_name" : $("#ed_branch_name").val(),
                     "description" : $("#ed_description").val(),
+                    "location" : $("#ed_location").val(),
+                    "contact" : $("#ed_contact").val(),
                 }
             }),
             success: function(respone){
                 if(respone['status']=="ok"){getTable();}
-                else{getTable();}
+                else{
+                    alert(respone['error']);
+                }
             },
         });
     }
 
     function branchDelete(id){
+        if( ! confirm("Confirm delete branch "+id+" ?") ){ return; };
         $.ajax({
             type: "POST",
             url: "<?=base_url("api/delete/branch")?>",
@@ -145,10 +173,42 @@
         });
     }
 
+    /** image upload */
+    $(':file').on('change', function () {
+        var file = this.files[0];
+        if (file.size > 1024000) {
+            alert('max upload size is 1 mb');
+        };
+        if (!(file.type == 'image/jpg' || file.type == 'image/jpeg' || file.type == 'image/png')) {
+            alert('only supported jpg, jpeg, png file.');
+        };
+    });
+
+    $('#button').on('click', function () {
+        $.ajax({
+            url: "<?=base_url("imgcatch/branch")?>",
+            type: 'POST',
+            data: new FormData($('form')[0]),
+            cache: false,
+            contentType: false,
+            processData: false,
+            complete:(msg)=>{
+                let response = JSON.parse(msg.responseText);
+                alert(response.result);
+                $("#imgpreview").attr('src',response.path);
+                $("#ed_branch_img").val(response.path);
+            }
+        });
+    });
+
+    $("#ed_branch_img").change(()=>{
+        $("#imgpreview").attr('src','<?=base_url()?>'+$("#ed_branch_img").val());
+    });
+    
     function getTable(){
         $("#branch_form,#table").hide();
         $.get(
-            "<?=base_url("api/read/branch?branch_id=".intval($admin['branch_id']))."limit="?>"+$("#limit").val(), 
+            "<?=base_url("api/read/branch?limit=")?>"+$("#limit").val(), 
             function( data ) {
                 console.log(data);
                 let result = data['result'];
@@ -172,11 +232,9 @@
                         // console.log(key, result[idx][key]);
                         if (key!="is_deleted"){
 
-                            if(key=="images"){
-                                //
-
-                                var imges_string = "<img src='" + result[idx][key] + "' class='img-fluid'/>";
-                                table += "<td>"+imges_string+"</td>";
+                            if(key=="img"){
+                                let img_str = "<img src='<?=base_url()?>" +result[idx][key] + "' class='img-fluid' style='height:100px;'/>";
+                                table += "<td>"+img_str+"</td>";
                             }
                             else{
                                 table += "<td>"+result[idx][key]+"</td>";
@@ -192,7 +250,12 @@
                         }
                     });
                         
-                    table+="<td><div class='btn-group'><button class='btn btn-sm btn-primary' onclick=\"branch_edit_init('"+id+"','"+result[idx]['location']+"','"+result[idx]['branch_name']+"','"+result[idx]['description']+"')\">Edit</button><button class='btn btn-sm btn-danger' onclick='branchDelete(\""+id+"\")'>Delete</button></div></td></tr>";
+                    table+=`<td>
+                        <div class='btn-group'>
+                            <button class='btn btn-sm btn-primary' onclick=\"branch_edit_init('${id}','${result[idx]['location']}','${result[idx]['branch_name']}','${result[idx]['description']}','${result[idx]['img']}')\">Edit</button>
+                            <button class='btn btn-sm btn-danger' onclick='branchDelete(\"${id}\")'>Delete</button>
+                        </div>
+                    </td></tr>`;
                 });
 
                 table+="</tbody>";

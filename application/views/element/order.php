@@ -131,8 +131,7 @@
                     getTable();
                 }
                 else{
-                    alert("ERROR");
-                    console.log(respone);
+                    alert(respone['error']);
                 }
             },
         });
@@ -305,7 +304,7 @@
             }
         );
         $("#new_order").show("fast");
-        console.log(menuList);
+        // console.log(menuList);
     };
 
     function buildRecipt(){
@@ -340,7 +339,7 @@
         recieptView += '<tr class="py-3 text-end"><td colspan="100%"><span>total : </span><h1 class="d-inline">'+order.total+'</h1></td></tr></table> <div class="d-grid gap-2 col-6 mx-auto"><button class="btn btn-primary" onclick="orderCreate()">Create Order</button></div>';
         
         // output
-        console.log(order.items);
+        // console.log(order.items);
         rcp.html(recieptView);
         rcp.show("fast");
     }

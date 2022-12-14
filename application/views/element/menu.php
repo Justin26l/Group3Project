@@ -44,16 +44,26 @@
 
 <div id="menu_form" style="display:none">
     <h2 id="menu_form_title">Menu Edit</h2>
-    <img id="ed_img_preview"  style="height:200px">
+    
+    <img id="imgpreview" style="height:200px;">
     
     <div class="form-floating mb-3">
         <input type="text" class="form-control" id="ed_menu_id" disabled>
         <label for="ed_menu_id">id</label>
     </div>
-    <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="ed_img" >
-        <label for="ed_img">Image</label>
-    </div>
+
+    <form enctype="multipart/form-data" class="row mb-3 mx-1">
+        <div class="col-5 border border-1 rounded-3">
+            <input name="file" type="file" class="mt-1"/>
+            <input type="button" id="button" value="Upload" class="mt-1"/>
+        </div>
+        <div class="col-6">
+            <div class="form-floating">
+                <input type="text" class="form-control" id="ed_img">
+                <label for="ed_img">Menu Image</label>
+            </div>
+        </div>
+    </form>
     <div class="form-floating mb-3">
         <input type="text" class="form-control" id="ed_category">
         <label for="ed_category">Category</label>
@@ -83,8 +93,9 @@
         $("#menu_form_title").html("Create");
         $("#menu_form_btn").attr("onclick","menuCreate()")
 
-        $("#ed_menu_id").val("");
+        $("#imgpreview").val("");
         $("#ed_img").val("");
+        $("#ed_menu_id").val("");
         $("#ed_category").val("");
         $("#ed_prod_name").val("");
         $("#ed_price").val("");
@@ -97,8 +108,9 @@
         $("#menu_form_title").html("Edit");
         $("#menu_form_btn").attr("onclick","menuEdit()")
 
-        $("#ed_menu_id").val(id);
+        $("#imgpreview").attr('src','<?=base_url()?>'+img);
         $("#ed_img").val(img);
+        $("#ed_menu_id").val(id);
         $("#ed_category").val(cat);
         $("#ed_prod_name").val(nm);
         $("#ed_price").val(price);
@@ -121,19 +133,16 @@
                 }
             }),
             success: function(respone){
-                if(respone['status']=="ok"){getTable();}
-                else{getTable();}
+                if(respone['status']=="ok"){
+                    getTable();
+                }else{
+                    alert(respone['error']);
+                }
             },
         });
     }
 
     function menuEdit(id,arr){
-        $("#ed_menu_id").val();
-        $("#ed_img").val();
-        $("#ed_category").val();
-        $("#ed_prod_name").val();
-        $("#ed_price").val();
-        $("#ed_description").val();
         $.ajax({
             type: "POST",
             url: "<?=base_url("api/update/menu")?>",
@@ -149,13 +158,17 @@
                 }
             }),
             success: function(respone){
-                if(respone['status']=="ok"){getTable();}
-                else{getTable();}
+                if(respone['status']=="ok"){
+                    getTable();
+                }else{
+                    alert(respone['error']);
+                }
             },
         });
     }
 
     function menuDelete(id){
+        if( ! confirm("Confirm delete product "+id+" ?") ){ return; };
         $.ajax({
             type: "POST",
             url: "<?=base_url("api/delete/menu")?>",
@@ -164,11 +177,41 @@
                 "delete":{"menu_id":id}
             }),
             success: function(respone){
-                if(respone['status']=="ok"){getTable();}
-                else{getTable();}
+                if(respone['status']=="ok"){
+                    getTable();
+                }else{
+                    alert(respone['error']);
+                }
             },
         });
     }
+    /** image upload */
+    $(':file').on('change', function () {
+        var file = this.files[0];
+        if (file.size > 1024000) {
+            alert('max upload size is 1 mb');
+        };
+        if (!(file.type == 'image/jpg' || file.type == 'image/jpeg' || file.type == 'image/png')) {
+            alert('only supported jpg, jpeg, png file.');
+        };
+    });
+
+    $('#button').on('click', function () {
+        $.ajax({
+            url: "<?=base_url("imgcatch/menu")?>",
+            type: 'POST',
+            data: new FormData($('form')[0]),
+            cache: false,
+            contentType: false,
+            processData: false,
+            complete:(msg)=>{
+                let response = JSON.parse(msg.responseText);
+                alert(response.result);
+                $("#imgpreview").attr('src',response.path);
+                $("#ed_img").val(response.path);
+            }
+        });
+    });
 
     function getTable(){
         $("#menu_form, #table").hide();
@@ -201,7 +244,12 @@
                         }
                     });
                         
-                    table+="<td><div class='btn-group'><button class='btn btn-sm btn-primary' onclick=\"menu_edit_init('"+id+"','"+result[idx]['img']+"','"+result[idx]['category']+"','"+result[idx]['prod_name']+"','"+result[idx]['price']+"','"+result[idx]['description']+"')\">Edit</button><button class='btn btn-sm btn-danger' onclick='menuDelete(\""+id+"\")'>Delete</button></div></td></tr>";
+                    table+=`<td>
+                        <div class='btn-group'>
+                            <button class='btn btn-sm btn-primary' onclick=\"menu_edit_init('${id}','${result[idx]['img']}','${result[idx]['category']}','${result[idx]['prod_name']}','${result[idx]['price']}','${result[idx]['description']}')\">Edit</button>
+                            <button class='btn btn-sm btn-danger' onclick='menuDelete(\"${id}\")'>Delete</button>
+                        </div>
+                    </td></tr>`;
                 });
 
                 table+="</tbody>";
@@ -214,10 +262,10 @@
 
     $(document).ready(()=>{
         getTable();
-        $("#ed_img_preview").attr("src",$("#ed_img").val());
+        $("#imgpreview").attr("src",$("#ed_img").val());
 
         $("#ed_img").change(()=>{
-            $("#ed_img_preview").attr("src",$("#ed_img").val());
+            $("#imgpreview").attr("src",$("#ed_img").val());
         });
     })
 </script>

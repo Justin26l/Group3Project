@@ -8,6 +8,15 @@
     <option value=200>200</option>
 </select>
 
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-funnel" viewBox="0 0 16 16">
+    <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2h-11z"/>
+</svg>
+
+<select id="filter" class="form-select-sm">
+    <option value="&superadmin=0">Branch admin</option>
+    <option value="&superadmin=1">Super admin</option>
+</select>
+
 <button type="button" class="btn btn-sm btn-primary" onclick="getTable()">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
@@ -56,14 +65,11 @@
         <input type="text" class="form-control" id="ed_password">
         <label for="ed_password">Password</label>
     </div>
-    <div class="form-floating mb-3">
-        <input type="number" class="form-control" id="ed_branch_id">
-        <label for="ed_branch_id">Branch_id</label>
-    </div>
-    <div class="form-floating mb-3">
-        <input type="number" class="form-control" id="ed_superadmin">
-        <label for="ed_superadmin">Superadmin</label>
-    </div>
+
+    <label class="text-muted" for="ed_branch_id">Branch_id</label>
+    <select class="form-select mb-4" id="ed_branch_id">
+        <option value="null">ERROR : Please refresh the page.</option>
+    </select>
     <div class="text-end">
         <button id="admin_form_btn" type="button" class="btn btn-primary rounded-3 px-4" onclick="adminEdit()">Save</button>
     </div>
@@ -83,32 +89,19 @@
         $("#ed_branch_id").val("");
         $("#ed_superadmin").val("");
     }
-
-    function admin_edit_init(id,user,pwd,bh_id,spa){
-        $("#table").hide();
-        $("#admin_form").show(250);
-        $("#admin_form_title").html("Edit");
-        $("#admin_form_btn").attr("onclick","adminEdit()")
-
-        $("#ed_admin_id").val(id);
-        $("#ed_username").val(user);
-        $("#ed_password").val(pwd);
-        $("#ed_branch_id").val(bh_id);
-        $("#ed_superadmin").val(spa);
-    }
     
     // fetch
     function adminCreate(){
+        if( ! confirm("Confirm Create Admin ?") ){ return; };
         $.ajax({
             type: "POST",
             url: "<?=base_url("api/create/admin")?>",
             contentType : "application/json",
             data: JSON.stringify({
                 "create":{
-                    "user":$("#ed_username").val(),
-                    "pwd":$("#ed_password").val(),
-                    "bh_id":$("#ed_branch_id").val(),
-                    "spa":$("#ed_superadmin").val(),
+                    "username":$("#ed_username").val(),
+                    "password":$("#ed_password").val(),
+                    "branch":$("#ed_branch_id").val(),
                 }
             }),
             success: function(respone){
@@ -118,32 +111,8 @@
         });
     }
 
-    function adminEdit(id,arr){
-        $("#ed_admin_id").val();
-        $("#ed_username").val();
-        $("#ed_password").val();
-        $("#ed_branch_id").val();
-        $("#ed_superadmin").val();
-        $.ajax({
-            type: "POST",
-            url: "<?=base_url("api/update/admin")?>",
-            contentType : "application/json",
-            data: JSON.stringify({
-                "update_where":{"menu_id":$("#ed_admin_id").val()},
-                "update":{
-                    "img" : $("#ed_username").val(),
-                    "category" : $("#ed_password").val(),
-                    "prod_name" : $("#ed_branch_id").val(),
-                    "price" : $("#ed_superadmin").val(),
-                }
-            }),
-            success: function(respone){
-                if(respone['status']=="ok"){getTable();}
-                else{getTable();}
-            },
-        });
-    }
     function adminDelete(id){
+        if( ! confirm("Confirm delete Admin "+id+" ?") ){ return; };
         $.ajax({
             type: "POST",
             url: "<?=base_url("api/delete/admin")?>",
@@ -161,7 +130,7 @@
         $("#admin_form,#table").hide();
         $("#table").show(250);
         $.get(
-            "<?=base_url("api/read/admin?branch_id=".intval($admin['branch_id']))."&limit="?>"+$("#limit").val(), 
+            "<?=base_url("api/read/admin")?>?limit="+$("#limit").val()+$("#filter").val(), 
             function( data ) {
                 console.log(data);
                 let result = data['result'];
@@ -187,10 +156,11 @@
                             table += "<td><img width='100px' src='"+result[idx][key]+"'></td>";
                         } else if (key!="is_deleted"){
                             table += "<td>"+result[idx][key]+"</td>";
-                        }
+                        };
+                        
                     });
                         
-                    table+="<td><div class='btn-group'><button class='btn btn-sm btn-primary' onclick=\"admin_edit_init('"+id+"','"+result[idx]['img']+"','"+result[idx]['category']+"','"+result[idx]['prod_name']+"','"+result[idx]['price']+"','"+result[idx]['description']+"')\">Edit</button><button class='btn btn-sm btn-danger' onclick='menuDelete(\""+id+"\")'>Delete</button></div></td></tr>";
+                    table+="<td><button class='btn btn-sm btn-danger' onclick='adminDelete(\""+id+"\")'>Delete</button></td></tr>";
                 });
 
                 table+="</tbody>";
@@ -201,9 +171,25 @@
 
     $(document).ready(function(){
         getTable();
+
+        $.get({
+            url: "<?=base_url("api/read/branch")?>",
+            success: function(respone){
+                let jar ='';
+                if(respone['status']=="ok"){
+                    respone.result.forEach((x)=>{
+                        jar += `<option value='${x.branch_id}'> [${x.branch_id}] ${x.branch_name} </option>`;
+                    });
+                    $("#ed_branch_id").html(jar);
+                };
+            },
+        });
+
         $("#ed_img").change(()=>{
             let x = $("#ed_img").val();
             $("#ed_img_preview").attr("src",x);
         });
+
+        $("#filter").change(()=>{getTable();});
     })
 </script>
