@@ -8,7 +8,7 @@ class Api_ctrl extends CI_Controller {
 	/** db param valid */
 	private $T_admin   = ["admin_id","username","password","branch","superadmin"];
 	private $T_booking = ["book_id","name","person","book_branch","book_time","status","created_time","comment","created_time>","created_time<"];
-	private $T_order   = ["order_id","order_branch","deliver","address","order_by","items","total","created_time","status","created_time>","created_time<"];
+	private $T_order   = ["order_id","order_branch","deliver","address","order_by","items","total","created_time","status","paid","created_time>","created_time<"];
 	private $T_branch  = ["branch_id","location","branch_name","description","img","unavailable_menu","is_deleted"];
 	private $T_menu    = ["menu_id","img","category","prod_name","price","description","is_deleted"];
 	private $T_about   = ["logo","company_name","description","customer_service_no","bussiness_name","bussiness_no"];
@@ -187,6 +187,8 @@ class Api_ctrl extends CI_Controller {
 					
 					if ($action == "create") {
 						$this->ismod();
+						// ismod or app token
+						// on app while pay,
 						$this->isset_return($this->post['create']);
 
 						$this->post['create']['status']="pending";
