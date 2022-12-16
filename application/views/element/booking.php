@@ -68,7 +68,7 @@
         let Request   = "created_time>="+(startdate+tzoffset)+"&created_time<="+(enddate+tzoffset)+"&limit="+$("#limit").val()+"&order=created_time "+sort;
 
         $.ajax({
-            url : "<?=base_url("api/read/booking?".($admin['superadmin']!=1 ? "book_branch==".intval($admin['branch'])."&" : ""))?>"+Request, 
+            url : "<?=base_url("api/read/booking?".($admin['superadmin']==0 ? "book_branch=".intval($admin['branch'])."&" : ""))?>"+Request, 
             success : ( data )=>{
 
                 let result = data['result'];

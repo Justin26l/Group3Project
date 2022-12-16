@@ -19,7 +19,7 @@ class Mod_ctrl extends CI_Controller
 		$valid_admin = $this->Admin_model->read(['username'=>$post['username'],'password'=>$hash_pass]);
 		if($valid_admin){
 			$this->load->library('session');
-			$this->session->set_userdata('mod',['admin_id'=>intval($valid_admin[0]['admin_id'])]);
+			$this->session->set_userdata('mod',['admin_id'=>intval($valid_admin[0]['admin_id']),'branch'=>intval($valid_admin[0]['branch'])]);
 			header('Location: '.base_url('dashboard'));
 		}else{
 			header('Location: '.base_url('?x=Unvalid User.'));

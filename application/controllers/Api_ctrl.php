@@ -3,78 +3,120 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Api_ctrl extends CI_Controller {
 
-	private $T_admin   = ["admin_id","username","password","branch_id","superadmin"];
+	private $TopSecret = "ヒグチアイ / 悪魔の子 (アニメスペシャルVer.) | Ai Higuchi “Akuma no Ko” Anime Special Ver. - Ai Higuchi - https://www.youtube.com/watch?v=WPl10ZrhCtk";
+	
+	/** db param valid */
+	private $T_admin   = ["admin_id","username","password","branch","superadmin"];
 	private $T_booking = ["book_id","name","person","book_branch","book_time","status","created_time","comment","created_time>","created_time<"];
-	private $T_order   = ["order_id","order_branch","deliver","address","order_by","items","total","created_time","status","created_time>","created_time<"];
-	private $T_branch  = ["branch_id","location","branch_name","description","images","is_deleted"];
+	private $T_order   = ["order_id","order_branch","deliver","address","order_by","items","total","created_time","status","paid","created_time>","created_time<"];
+	private $T_branch  = ["branch_id","location","branch_name","description","img","unavailable_menu","is_deleted"];
 	private $T_menu    = ["menu_id","img","category","prod_name","price","description","is_deleted"];
 	private $T_about   = ["logo","company_name","description","customer_service_no","bussiness_name","bussiness_no"];
 
+	/** response value */
 	private $stat = [
 		"ok",
 		'error'
 	];
-
 	private $err = [
 		"Unvalid Path.",//url
-		"Unvalid Action-",//url
-		"Unvalid Param-",//get
+		"Unvalid Action->",//url
+		"Unvalid Param->",//get
 		"Post Fields Is Empty.",//post
 		"Permission Denied.",//mod session required
 		"Required Higher Permission."//superadmin required
 	];
 
-	private function response($status,$error,$result){
+	/** variable */
+	private $status = "";
+	private $error  = "";
+	private $result = "";
+
+	private $get  ;
+	private $post ;
+
+	/** function */
+	function __construct(){
+		parent::__construct();
+
+		// catch json post & assign to native post handler
+		if( isset($_SERVER["CONTENT_TYPE"]) && $_SERVER["CONTENT_TYPE"]=="application/json"){
+			$_POST = json_decode(file_get_contents("php://input"),1);
+		};
+
+		$this->post = $this->input->post(NULL, TRUE);
+		$this->get = $this->input->get(NULL, TRUE);
+	}
+
+	private function response(){
 		header("Access-Control-Allow-Origin: *");
 		header("Access-Control-Allow-Headers: *");
 
 		header('Content-Type: application/json; charset=utf-8');
 		echo json_encode([
-			"status"=>$status,
-			"error"=>$error,
-			"result"=>$result,
+			"status"=>$this->status,
+			"error"=>$this->error,
+			"result"=>$this->result,
 		]);
 	}
-
-	// ========== Verify ========== //
 
 	private function ismod(){
 		$this->load->library('session');
 		if(!$this->session->has_userdata('mod')){
-			$this->response($this->stat[1],$this->err[4],"");
-			return false;
-		} else {
-			return true;
+			$this->status = $this->stat[1];
+			$this->error = $this->err[4];
+			throw new Exception("error");
 		}
 	}
 
 	private function issuper(){
 		$this->load->library('session');
-		if($this->ismod()){
-			$this->load->model("Admin_model");
-			$session = $this->session->userdata('mod');
-			$admin = $this->Admin_model->read(['admin_id'=>$session['admin_id']])[0];
-			if(! $admin['superadmin']===1){
-				$this->response($this->stat[1],$this->err[5],"");
-				return false;
-			} else {
-				return true;
-			}
-		}
+		$this->load->model("Admin_model");
+
+		$this->ismod();
+
+		$session = $this->session->userdata('mod');
+		$admin = $this->Admin_model->read(['admin_id'=>$session['admin_id']])[0];
+
+		if(! $admin['superadmin']===1){
+			$this->status = $this->stat[1];
+			$this->error  = $this->err[5];
+			throw new Exception("error");
+		};
 	}
 
-	private function validParam($input,$checkList){
-		$input = array_keys($input);
+	private function validParam($checkList){
+		$input='';
+		if(isset($this->post['create'])){
+			$input = array_keys($this->post['create']);
+		}
+		else if(isset($this->post['update'])){
+			$input = array_keys($this->post['update']);
+		}
+		else if(isset($this->post['delete'])){
+			$input = array_keys($this->post['delete']);
+		}
+		else if(isset($this->get)){
+			$input = array_keys($this->get);
+		}
+		else{
+			return;
+		};
 
 		foreach($input as $i){
 			if(!in_array($i,$checkList)){
-				$status = $this->stat[1];
-				$error = $this->err[2].$i.'.';
-				$this->response($status,$error,"");
-				return false;
+				$this->status = $this->stat[1];
+				$this->error = $this->err[2].$i.'.';
+				throw new Exception("error");
 			};
 		};
-		return true;
+	}
+
+	private function isset_return($item1=true, $item2=true, $item3=true){
+		if( ! ( isset($item1) && isset($item2) && isset($item3) ) ){
+			$this->error = $this->err[2];
+			throw new Exception("error");
+		};
 	}
 
 	// ========== API ========== //
@@ -85,244 +127,209 @@ class Api_ctrl extends CI_Controller {
 		
 		try {
 			$this->load->library('session');
-			$status = $this->stat[0];
-			$error  = "";
-			$result = "";
-
-			// catch json post & assign to native post handler
-			if( isset($_SERVER["CONTENT_TYPE"]) && $_SERVER["CONTENT_TYPE"]=="application/json"){
-				$_POST = json_decode(file_get_contents("php://input"),1);
-			};
-			
-			// catch all input
-			$post = $this->input->post(NULL, TRUE);
-			$get = $this->input->get(NULL, TRUE);
+			$this->status = $this->stat[0];
+			$this->error  = "";
+			$this->result = "";
 
 			// format filter
 			$readlimit = 99;
 			$order = null;
-			if(isset($get[0])){unset($get[0]);};
-			if(isset($get['limit'])){
-				$readlimit = $get["limit"];
-				unset($get["limit"]);
+
+			if(isset($this->get[0])){
+				unset($this->get[0]);
 			};
-			if(isset($get["order"])){
-				$order = $get["order"];
-				unset($get["order"]);
+
+			if(isset($this->get['limit'])){
+				$readlimit = $this->get["limit"];
+				unset($this->get["limit"]);
+			};
+
+			if(isset($this->get["order"])){
+				$order = $this->get["order"];
+				unset($this->get["order"]);
 			}
 			
 			// post but empty body
-			if ( $_SERVER['REQUEST_METHOD'] === 'POST' && empty($post)) {
-				$error = $this->err[3];
+			if ( $_SERVER['REQUEST_METHOD'] === 'POST' && empty($this->post)) {
+				$this->error = $this->err[3];
+				throw new Exception("error");
 			};
+
 			// api
 			switch ($path) {
 				case "booking":
 					$this->load->model("Booking_model");
+					$this->validParam($this->T_booking);
+
 					if ($action == "create") {
-						$post['create']['status']="pending";
-						$post['create']['created_time']=time();
+						$this->isset_return($this->post['create']);
+						$this->post['create']['status']="pending";
+						$this->post['create']['created_time']=time();
+						$this->result = $this->Booking_model->create($this->post['create']);
 
-						if(isset($post['create'])){
-							if ($this->validParam($post['create'],$this->T_booking)){
-								$result = $this->Booking_model->create($post['create']);
-								$this->response($status,$error,$result);
-								return;
-							}else {
-								return;
-							};
-						} else {
-							$error  = $this->err[2];
-							$this->response($status,$error,$result);
-							return;
-						};
-						$this->response($status,$error,$result);
-						return;
 					} else if ($action == "read") {
-
-						if ($this->validParam($get,$this->T_booking)){
-							$result = $this->Booking_model->read($get, $readlimit, $order);
-							$this->response($status,$error,$result);
-							return;
-						}else {
-							return;
-						};
+						$this->result = $this->Booking_model->read($this->get, $readlimit, $order);
+						
 					} else if ($action == "update") {
-						if(!$this->ismod()){return;};
-						$result = $this->Booking_model->update($post['update_where'], $post['update']);
-						$this->response($status,$error,$result);
-						return;
+						$this->ismod();
+						$this->isset_return($this->post['update_where'],$this->post['update']);
+						$this->result = $this->Booking_model->update($this->post['update_where'], $this->post['update']);
+
 					} else {
-						$error = $this->err[1].$action;
-						$this->response($status,$this->err[1].$action,$result);
+						$this->error = $this->err[1].$action;
+						throw new Exception("error");
 					};
 					break;
+				
 				case "order":
 					$this->load->model("Order_model");
+					$this->validParam($this->T_order);
+					
 					if ($action == "create") {
-						$post['create']['status']="pending";
-						$post['create']['created_time']=time();
-						if(isset($post['create'])){
-							if ($this->validParam($post['create'],$this->T_order)){
-								$post['create']['items'] = json_encode($post['create']['items']);
-								$result = $this->Order_model->create($post['create']);
-								$this->response($status,$error,$result);
-								return;
-							};
-						} else {
-							$error  = $this->err[2];
-							$this->response($status,$error,$result);
-							return;
-						};
+						$this->ismod();
+						// ismod or app token
+						// on app while pay,
+						$this->isset_return($this->post['create']);
+
+						$this->post['create']['status']="pending";
+						$this->post['create']['items'] = json_encode($this->post['create']['items']);
+						$this->post['create']['created_time']=time();
+						$this->result = $this->Order_model->create($this->post['create']);
+
 					} else if ($action == "read") {
-						if ($this->validParam($get,$this->T_order)){
-							$result = $this->Order_model->read($get, $readlimit, $order);
-							$this->response($status,$error,$result);
-							return;
-						};
+						$this->result = $this->Order_model->read($this->get, $readlimit, $order);
+
 					} else if ($action == "update") {
-						if(!$this->ismod()){return;};
-						$result = $this->Order_model->update($post['update_where'], $post['update']);
-						$this->response($status,$error,$result);
-						return;
+						$this->ismod();
+						$this->isset_return($this->post['update_where'],$this->post['update']);
+						$this->result = $this->Order_model->update($this->post['update_where'], $this->post['update']);
+
 					} else {
-						$error = $this->err[1].$action;
-						$this->response($status,$this->err[1].$action,$result);
+						$this->error = $this->err[1].$action;
+						throw new Exception("error");
 					};
 					break;
+				
 				case "menu":
 					$this->load->model("Menu_model");
+					$this->validParam($this->T_menu);
+
 					if ($action == "create") {
-						if(!$this->issuper()){return;};
-						$result = $this->Menu_model->create($post['create']);
-						$this->response($status,$error,$result);
-						return;
+						$this->issuper();
+						$this->isset_return($this->post['create']);
+						$this->result = $this->Menu_model->create($this->post['create']);
+
 					} else if ($action == "read") {
-						if(!isset($get["is_deleted"])){$get["is_deleted"] = 0;}
-						if($this->validParam($get,$this->T_menu)){
-							$result = $this->Menu_model->read($get, $readlimit, $order);
-							$this->response($status,$error,$result);
-							return;
-						}else {
-							return;
-						};
+						$this->get["is_deleted"] = 0;
+						$this->result = $this->Menu_model->read($this->get, $readlimit, $order);
+
 					} else if ($action == "update") {
-						if(!$this->issuper()){return;};
-						$result = $this->Menu_model->update($post['update_where'], $post['update']);
-						$this->response($status,$error,$result);
-						return;
+						$this->issuper();
+						$this->isset_return($this->post['update_where'],$this->post['update']);
+						$this->result = $this->Menu_model->update($this->post['update_where'], $this->post['update']);
+
 					} else if ($action == "delete") {
-						if(!$this->issuper()){return;};
-						$result = $this->Menu_model->soft_delete($post['delete']);
-						$this->response($status,$error,$result);
-						return;
+						$this->issuper();
+						$this->isset_return($this->post['delete']);
+						$this->result = $this->Menu_model->soft_delete($this->post['delete']);
+
 					} else {
-						$error = $this->err[1].$action;
-						$this->response($status,$error,$result);
-						return;
+						$this->error = $this->err[1].$action;
+						throw new Exception("error");
 					};
 					break;
+				
 				case "branch":
 					$this->load->model("Branch_model");
+					$this->validParam($this->T_branch);
+
 					if ($action == "create") {
-						if(!$this->issuper()){return;};
-						$result = $this->Branch_model->create($post['create']);
-						$this->response($status,$error,$result);
-						return;
+						$this->issuper();
+						$this->isset_return($this->post['create']);
+						$this->result = $this->Branch_model->create($this->post['create']);
+
 					} else if ($action == "read") {
-						if(!isset($get["is_deleted"])){$get["is_deleted"] = 0;}
-						if($this->validParam($get,$this->T_branch)){
-							$result = $this->Branch_model->read($get, $readlimit, $order);
-							$this->response($status,$error,$result);
-							return;
-						}else {
-							return;
-						};
+						$this->get['is_deleted']=0;
+						$this->result = $this->Branch_model->read($this->get, $readlimit, $order);
+
 					} else if ($action == "update") {
-						if(!$this->issuper()){return;};
-						$result = $this->Branch_model->update($post['update_where'], $post['update']);
-						$this->response($status,$error,$result);
-						return;
+						$this->issuper();
+						$this->isset_return($this->post['update_where'],$this->post['update']);
+						$this->result = $this->Branch_model->update($this->post['update_where'], $this->post['update']);
+
 					} else if ($action == "delete") {
-						if(!$this->issuper()){return;};
-						$result = $this->Branch_model->soft_delete($post['delete']);
-						$this->response($status,$error,$result);
-						return;
+						$this->issuper();
+						$this->isset_return($this->post['delete']);
+						$this->result = $this->Branch_model->soft_delete($this->post['delete']);
+
 					} else {
-						$error = $this->err[1].$action;
-						$this->response($status,$error,$result);
-						return;
+						$this->error = $this->err[1].$action;
+						throw new Exception("error");
 					};
 					break;
+				
 				case "about":
 					$this->load->model("About_model");
-					// if ($action == "create") {
-					// 	$result = $this->About_model->create($post['create']);
-					// 	$this->response($status,$error,$result);
-					// return;
-					// } else 
+					$this->validParam($this->T_about);
+
 					if ($action == "read") {
-						if($this->validParam($get,$this->T_about)){
-							$result = $this->About_model->read($get, $readlimit, $order);
-							$this->response($status,$error,$result);
-							return;
-						}else {
-							return;
-						};
+						$this->result = $this->About_model->read($this->get, $readlimit, $order);
+
 					} else if ($action == "update") {
-						if(!$this->issuper()){return;};
-						$result = $this->About_model->update($post['update_where'], $post['update']);
-						$this->response($status,$error,$result);
-						return;
-					// } else if ($action == "delete") {
-					// 	$result = $this->About_model->soft_delete($post['delete']);
-					// 	$this->response($status,$error,$result);
-					return;
+						$this->issuper();
+						$this->isset_return($this->post['update_where'],$this->post['update']);
+						$this->result = $this->About_model->update($this->post['update_where'], $this->post['update']);
+
 					} else {
-						$error = $this->err[1].$action;
-						$this->response($status,$error,$result);
-						return;
+						$this->error = $this->err[1].$action;
+						throw new Exception("error");
 					};
 					break;
+				
 				case "admin":
 					$this->load->model("Admin_model");
-					if(!$this->issuper()){return false;};
+					$this->validParam($this->T_admin);
+					$this->issuper();
+
 					if ($action == "create") {
-						$result = $this->Admin_model->create($post['create']);
-						$this->response($status,$error,$result);
-						return;
+						$this->isset_return($this->post['create']);
+						$this->post['create']['superadmin'] = 0;
+						$this->post['create']['password'] = hash_hmac('sha256', $this->post['create']['password'], $this->TopSecret) ;
+						$this->result = $this->Admin_model->create($this->post['create']);
+
 					} else if ($action == "read") {
-						if($this->validParam($get,$this->T_admin)){
-							$result = $this->Admin_model->read($get, $readlimit, $order);
-							$this->response($status,$error,$result);
-							return;
-						}else {
-							return;
-						};
+						$this->get['is_deleted']=0;
+						$this->db->select(['admin_id','username','branch','superadmin']);
+						$this->result = $this->Admin_model->read($this->get, $readlimit, $order);
+
 					} else if ($action == "update") {
-						$result = $this->Admin_model->update($post['update_where'], $post['update']);
-						$this->response($status,$error,$result);
-						return;
+						$this->isset_return($this->post['update_where'],$this->post['update']);
+						$this->result = $this->Admin_model->update($this->post['update_where'], $this->post['update']);
+
 					} else if ($action == "delete") {
-						$result = $this->Admin_model->soft_delete($post['delete']);
-						$this->response($status,$error,$result);
-						return;
+						$this->isset_return($this->post['delete']);
+						$this->result = $this->Admin_model->soft_delete($this->post['delete']);
 					} else {
-						$error = $this->err[1].$action;
-						$this->response($status,$error,$result);
-						return;
+						$this->error = $this->err[1].$action;
+						throw new Exception("error");
 					};
 					break;
+				
 				default:
-					$error = $this->err[0];
-					$this->response($status,$error,$result);
-					return;
+					$this->error = $this->err[0];
 					break;
-			}
+			};
+			
+			/* return */
+			$this->response();
 		} catch (Exception $e) {
-			echo 'Message: ' . $e->getMessage();
-		}
+			if($e->getMessage()=="error"){
+				$this->response();
+			}else{
+				echo 'Message: ' . $e->getMessage();
+			};
+		};
 	}
-}
 
-// echo $this->db->last_query();
+
+}
