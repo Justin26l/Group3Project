@@ -112,13 +112,6 @@ class Api_ctrl extends CI_Controller {
 		};
 	}
 
-	private function isset_return($item1=true, $item2=true, $item3=true){
-		if( ! ( isset($item1) && isset($item2) && isset($item3) ) ){
-			$this->error = $this->err[2];
-			throw new Exception("error");
-		};
-	}
-
 	// ========== API ========== //
 	// ========== API ========== //
 	// ========== API ========== //
@@ -162,7 +155,7 @@ class Api_ctrl extends CI_Controller {
 					$this->validParam($this->T_booking);
 
 					if ($action == "create") {
-						$this->isset_return($this->post['create']);
+						if(!isset($this->post['create']));
 						$this->post['create']['status']="pending";
 						$this->post['create']['created_time']=time();
 						$this->result = $this->Booking_model->create($this->post['create']);
@@ -172,7 +165,10 @@ class Api_ctrl extends CI_Controller {
 						
 					} else if ($action == "update") {
 						$this->ismod();
-						$this->isset_return($this->post['update_where'],$this->post['update']);
+						if(!isset($this->post['update_where'])|| !isset($this->post['update'])){ 
+							$this->error = $this->err[2]; 
+							throw new Exception("error"); 
+						};
 						$this->result = $this->Booking_model->update($this->post['update_where'], $this->post['update']);
 
 					} else {
@@ -189,7 +185,10 @@ class Api_ctrl extends CI_Controller {
 						$this->ismod();
 						// ismod or app token
 						// on app while pay,
-						$this->isset_return($this->post['create']);
+						if(!isset($this->post['create'])){ 
+							$this->error = $this->err[2]; 
+							throw new Exception("error"); 
+						};
 
 						$this->post['create']['status']="pending";
 						$this->post['create']['items'] = json_encode($this->post['create']['items']);
@@ -201,7 +200,10 @@ class Api_ctrl extends CI_Controller {
 
 					} else if ($action == "update") {
 						$this->ismod();
-						$this->isset_return($this->post['update_where'],$this->post['update']);
+						if(!isset($this->post['update_where']) || !isset($this->post['update'])){ 
+							$this->error = $this->err[2]; 
+							throw new Exception("error"); 
+						};
 						$this->result = $this->Order_model->update($this->post['update_where'], $this->post['update']);
 
 					} else {
@@ -216,7 +218,10 @@ class Api_ctrl extends CI_Controller {
 
 					if ($action == "create") {
 						$this->issuper();
-						$this->isset_return($this->post['create']);
+						if(!isset($this->post['create'])){ 
+							$this->error = $this->err[2]; 
+							throw new Exception("error"); 
+						};
 						$this->result = $this->Menu_model->create($this->post['create']);
 
 					} else if ($action == "read") {
@@ -225,12 +230,18 @@ class Api_ctrl extends CI_Controller {
 
 					} else if ($action == "update") {
 						$this->issuper();
-						$this->isset_return($this->post['update_where'],$this->post['update']);
+						if(!isset($this->post['update_where']) || !isset($this->post['update'])){ 
+							$this->error = $this->err[2]; 
+							throw new Exception("error"); 
+						};
 						$this->result = $this->Menu_model->update($this->post['update_where'], $this->post['update']);
 
 					} else if ($action == "delete") {
 						$this->issuper();
-						$this->isset_return($this->post['delete']);
+						if(!isset($this->post['delete'])){ 
+							$this->error = $this->err[2]; 
+							throw new Exception("error"); 
+						};
 						$this->result = $this->Menu_model->soft_delete($this->post['delete']);
 
 					} else {
@@ -245,7 +256,10 @@ class Api_ctrl extends CI_Controller {
 
 					if ($action == "create") {
 						$this->issuper();
-						$this->isset_return($this->post['create']);
+						if(!isset($this->post['create'])){ 
+							$this->error = $this->err[2]; 
+							throw new Exception("error"); 
+						};
 						$this->result = $this->Branch_model->create($this->post['create']);
 
 					} else if ($action == "read") {
@@ -254,12 +268,18 @@ class Api_ctrl extends CI_Controller {
 
 					} else if ($action == "update") {
 						$this->issuper();
-						$this->isset_return($this->post['update_where'],$this->post['update']);
+						if(!isset($this->post['update_where']) || !isset($this->post['update'])){ 
+							$this->error = $this->err[2]; 
+							throw new Exception("error"); 
+						};
 						$this->result = $this->Branch_model->update($this->post['update_where'], $this->post['update']);
 
 					} else if ($action == "delete") {
 						$this->issuper();
-						$this->isset_return($this->post['delete']);
+						if(!isset($this->post['delete'])){ 
+							$this->error = $this->err[2]; 
+							throw new Exception("error"); 
+						};
 						$this->result = $this->Branch_model->soft_delete($this->post['delete']);
 
 					} else {
@@ -277,7 +297,10 @@ class Api_ctrl extends CI_Controller {
 
 					} else if ($action == "update") {
 						$this->issuper();
-						$this->isset_return($this->post['update_where'],$this->post['update']);
+						if(!isset($this->post['update_where']) || !isset($this->post['update'])){ 
+							$this->error = $this->err[2]; 
+							throw new Exception("error"); 
+						};
 						$this->result = $this->About_model->update($this->post['update_where'], $this->post['update']);
 
 					} else {
@@ -292,7 +315,10 @@ class Api_ctrl extends CI_Controller {
 					$this->issuper();
 
 					if ($action == "create") {
-						$this->isset_return($this->post['create']);
+						if(!isset($this->post['create'])){ 
+							$this->error = $this->err[2]; 
+							throw new Exception("error"); 
+						};
 						$this->post['create']['superadmin'] = 0;
 						$this->post['create']['password'] = hash_hmac('sha256', $this->post['create']['password'], $this->TopSecret) ;
 						$this->result = $this->Admin_model->create($this->post['create']);
@@ -303,11 +329,17 @@ class Api_ctrl extends CI_Controller {
 						$this->result = $this->Admin_model->read($this->get, $readlimit, $order);
 
 					} else if ($action == "update") {
-						$this->isset_return($this->post['update_where'],$this->post['update']);
+						if(!isset($this->post['update_where']) || !isset($this->post['update'])){ 
+							$this->error = $this->err[2]; 
+							throw new Exception("error"); 
+						};
 						$this->result = $this->Admin_model->update($this->post['update_where'], $this->post['update']);
 
 					} else if ($action == "delete") {
-						$this->isset_return($this->post['delete']);
+						if(!isset($this->post['delete'])){ 
+							$this->error = $this->err[2]; 
+							throw new Exception("error"); 
+						};
 						$this->result = $this->Admin_model->soft_delete($this->post['delete']);
 					} else {
 						$this->error = $this->err[1].$action;
