@@ -191,6 +191,7 @@
                             };
                         }else if(key=="items"){
                             xyz = "";
+                            console.log(itm);
                             zz = JSON.parse(itm);
                             zz.forEach((y)=>{ xyz+="("+y.i +") "+ y.n +" @"+ y.p +" x"+ y.q +" = [ "+ y.s+" ]</br>" });
                             table += "<td>"+ xyz +"</td>";
@@ -223,8 +224,8 @@
         getMenu();
         order = {
             is_dine : 1,
-            address : null,
-            order_by: null,
+            pickup_time : null,
+            order_by: "",
             items   : [],
             total   : 0,
         };

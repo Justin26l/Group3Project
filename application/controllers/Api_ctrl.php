@@ -4,11 +4,12 @@ defined('BASEPATH') or exit('No direct script access allowed');
 class Api_ctrl extends CI_Controller {
 
 	private $TopSecret = "ヒグチアイ / 悪魔の子 (アニメスペシャルVer.) | Ai Higuchi “Akuma no Ko” Anime Special Ver. - Ai Higuchi - https://www.youtube.com/watch?v=WPl10ZrhCtk";
-	
+	private $AppSecret = "";
+
 	/** db param valid */
 	private $T_admin   = ["admin_id","username","password","branch","superadmin"];
 	private $T_booking = ["book_id","name","person","book_branch","book_time","status","created_time","comment","created_time>","created_time<"];
-	private $T_order   = ["order_id","order_branch","is_dine","address","order_by","items","total","created_time","status","paid","created_time>","created_time<"];
+	private $T_order   = ["order_id","order_branch","is_dine","table","pickup_time","order_by","items","total","created_time","status","paid","created_time>","created_time<"];
 	private $T_branch  = ["branch_id","location","branch_name","description","img","unavailable_menu","is_deleted"];
 	private $T_menu    = ["menu_id","img","category","prod_name","price","description","is_deleted"];
 	private $T_about   = ["logo","company_name","description","customer_service_no","bussiness_name","bussiness_no"];
@@ -39,6 +40,8 @@ class Api_ctrl extends CI_Controller {
 	function __construct(){
 		parent::__construct();
 
+		$this->AppSecret = base64_encode('createOrder'.intval(time()/86400));
+		
 		// catch json post & assign to native post handler
 		if( isset($_SERVER["CONTENT_TYPE"]) && $_SERVER["CONTENT_TYPE"]=="application/json"){
 			$_POST = json_decode(file_get_contents("php://input"),1);
@@ -100,7 +103,9 @@ class Api_ctrl extends CI_Controller {
 			$input = array_keys($this->get);
 		}
 		else{
-			return;
+			$this->status = $this->stat[1];
+			$this->error = $this->err[2]."No Param Recive.";
+			throw new Exception("error");
 		};
 
 		foreach($input as $i){
@@ -155,7 +160,11 @@ class Api_ctrl extends CI_Controller {
 					$this->validParam($this->T_booking);
 
 					if ($action == "create") {
-						if(!isset($this->post['create']));
+						if(!isset($this->post['create'])){
+							$this->error = $this->err[3]; 
+							throw new Exception("error"); 
+						};
+
 						$this->post['create']['status']="pending";
 						$this->post['create']['created_time']=time();
 						$this->result = $this->Booking_model->create($this->post['create']);
@@ -182,15 +191,27 @@ class Api_ctrl extends CI_Controller {
 					$this->validParam($this->T_order);
 					
 					if ($action == "create") {
-						$this->ismod();
-						// ismod or app token
-						// on app while pay,
+
 						if(!isset($this->post['create'])){ 
-							$this->error = $this->err[2]; 
+							$this->error = $this->err[3]; 
 							throw new Exception("error"); 
 						};
 
+						//chack token
+
+						if(isset($this->post['token']) && $this->post['token'] == $this->AppSecret ){
+							unset($this->post['token']);
+						}
+						else if(isset($this->post['token']) && $this->post['token'] == $this->AppSecret){
+							$this->error = $this->err[2]."token.";
+							throw new Exception("error"); 
+						}
+						else{
+							$this->ismod();
+						};
+
 						$this->post['create']['status']="pending";
+						$this->post['create']['paid'] .= "->pending";
 						$this->post['create']['items'] = json_encode($this->post['create']['items']);
 						$this->post['create']['created_time']=time();
 						$this->result = $this->Order_model->create($this->post['create']);
@@ -219,7 +240,7 @@ class Api_ctrl extends CI_Controller {
 					if ($action == "create") {
 						$this->issuper();
 						if(!isset($this->post['create'])){ 
-							$this->error = $this->err[2]; 
+							$this->error = $this->err[3]; 
 							throw new Exception("error"); 
 						};
 						$this->result = $this->Menu_model->create($this->post['create']);
@@ -257,7 +278,7 @@ class Api_ctrl extends CI_Controller {
 					if ($action == "create") {
 						$this->issuper();
 						if(!isset($this->post['create'])){ 
-							$this->error = $this->err[2]; 
+							$this->error = $this->err[3]; 
 							throw new Exception("error"); 
 						};
 						$this->result = $this->Branch_model->create($this->post['create']);
@@ -316,7 +337,7 @@ class Api_ctrl extends CI_Controller {
 
 					if ($action == "create") {
 						if(!isset($this->post['create'])){ 
-							$this->error = $this->err[2]; 
+							$this->error = $this->err[3]; 
 							throw new Exception("error"); 
 						};
 						$this->post['create']['superadmin'] = 0;
