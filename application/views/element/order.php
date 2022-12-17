@@ -58,15 +58,15 @@
 
         <div class="btn-group" role="group">
             <button id="dine" type="button" class="btn btn-lg border border-2 btn-primary" onclick="setDine('dine')" >Dine In</button>
-            <button id="deli" type="button" class="btn btn-lg border border-2" onclick="setDeli('deli')" >Deliver</button>
+            <button id="deli" type="button" class="btn btn-lg border border-2" onclick="setDeli('deli')" >Take Away</button>
         </div>
         <br><br>
 
         <div id="deliInfo" style="display:none;">
-            <label for="address" class="form-label">Address</label>
-            <input id="address"  class="form-control">
+            <label for="address" class="form-label">Time</label>
+            <input type="datetime-local" id="address" class="form-control">
 
-            <label for="recive" class="form-label">Reciver Name</label>
+            <label for="recive" class="form-label">Name</label>
             <input id="recive"  class="form-control">
         </div>
         
@@ -175,11 +175,9 @@
                         let itm = result[idx][key];
                         if(key=="paid"){
                             if(itm=='pending'){
-                                table += "<td class='bg-warning'><div class='btn-group btn-group'><button type='button' class='btn btn-success' onclick='orderUpdate("+result[idx]['order_id']+",\"cash\")'>CASH</button><button type='button' class='btn btn-primary' onclick='orderUpdate("+result[idx]['order_id']+",\"stripe\")'>Stripe</button><button type='button' class='btn btn-danger' onclick='orderUpdate("+result[idx]['order_id']+",\"denied\")'>Denied</button></div></td>";
-                            }else if (itm=='cash'){
-                                table += "<td class='bg-success bg-opacity-75 text-white'>"+itm+"</td>";
-                            }else if (itm=='stripe'){
-                                table += "<td class='bg-primary bg-opacity-75 text-white'>"+itm+"</td>";
+                                table += "<td class='bg-warning'><b>"+itm+"</b><br><div class='btn-group btn-group'><button type='button' class='btn btn-success' onclick='orderUpdate("+result[idx]['order_id']+",\"cash\")'>CASH</button><button type='button' class='btn btn-primary' onclick='orderUpdate("+result[idx]['order_id']+",\"stripe\")'>Stripe</button><button type='button' class='btn btn-danger' onclick='orderUpdate("+result[idx]['order_id']+",\"denied\")'>Denied</button></div></td>";
+                            }else if(itm.includes('->pending')){
+                                table += "<td class='bg-primary bg-opacity-75 text-white'><b>"+itm+"</b><br><div class='btn-group btn-group'><button type='button' class='btn btn-success' onclick='orderUpdate("+result[idx]['order_id']+",\""+itm.replace('->pending','')+"\")'>Accept</button><button type='button' class='btn btn-danger' onclick='orderUpdate("+result[idx]['order_id']+",\"denied\")'>Denied</button></div></td>";
                             }else if (itm=='denied'){
                                 table += "<td class='bg-danger bg-opacity-75 text-white'>"+itm+"</td>";
                             }else{
@@ -198,7 +196,7 @@
                             table += "<td>"+ xyz +"</td>";
                         }else if(key=="created_time"){
                             table += "<td>"+timestamp_DateTime(itm)+"</td>";
-                        }else if(key=="deliver"){
+                        }else if(key=="is_dine"){
                             table += "<td>"+( itm==1 ? "YES" : "NO")+"</td>";
                         }else{
                             table += "<td>"+itm+"</td>";
@@ -224,7 +222,7 @@
         hideAll_order();
         getMenu();
         order = {
-            deliver : 0,
+            is_dine : 1,
             address : null,
             order_by: null,
             items   : [],
@@ -237,7 +235,7 @@
         $('#deli').removeClass('btn-warning');
         $('#deliInfo').hide('fast');
         $('#dineInfo').show('fast');
-        order.deliver = 0;
+        order.is_dine = 1;
         order.address = null;
         order.order_by= null;
     }
@@ -247,7 +245,7 @@
         $('#dine').removeClass('btn-primary');
         $('#dineInfo').hide('fast');
         $('#deliInfo').show('fast');
-        order.deliver = 1;
+        order.is_dine = 0;
     }
 
     function cart_minus(jar){
@@ -345,7 +343,11 @@
     }
 
     $(document).ready(function(){
-        document.querySelector("#date").value = new Date(Date.now()-tzoffset* 1000).toISOString().slice(0, 10);
+        let isoNow = new Date(Date.now()-tzoffset* 1000).toISOString();
+        console.log(isoNow)
+        document.querySelector("#date").value = isoNow.slice(0, 10);
+        document.querySelector("#address").min = isoNow.slice(0, 19);
+
         getTable();
         $("#date, #limit, #sortby").change(()=>{getTable()});
     })
