@@ -65,8 +65,10 @@
         </div>
     </form>
     <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="ed_category">
+        <input type="text" class="form-control" id="ed_category" autocomplete="off" list="catlist">
         <label for="ed_category">Category</label>
+        <datalist id="catlist">
+        </datalist>
     </div>
     <div class="form-floating mb-3">
         <input type="text" class="form-control" id="ed_prod_name">
@@ -220,10 +222,13 @@
             success = (data)=>{
                 let result = data['result'];
                 let table = "";
-                // console.log(Object.keys(result[0]));
+                
+                let duplicate_cat = [];
+                let catlist_html = "";
+
+                // build table
                 table += "<thead><tr>";
                 Object.keys(result[0]).forEach(function(head) {
-                    // console.log(key, result[idx][key]);
                     if (head!="is_deleted"){
                         table += "<th>"+(head=="menu_id"?"#":head)+"</th>";
                     }
@@ -232,16 +237,22 @@
 
                 table+="<tbody class='table-group-divider'>";
                 Object.keys(result).forEach(function(idx) {
-                    // console.log(idx, result[idx]);
                     let id = result[idx]['menu_id'];
+
                     table+="<tr>";
                     Object.keys(result[idx]).forEach(function(key) {
-                        // console.log(key, result[idx][key]);
                         if (key=="img"){
                             table += "<td><img width='100px' src='"+result[idx][key]+"'></td>";
-                        } else if (key!="is_deleted"){
+                        } 
+                        else if( key=="category" && !duplicate_cat.includes(result[idx][key]) ){
+                            duplicate_cat.push(result[idx][key]);
+                            catlist_html += '<option value="'+result[idx][key]+'">';
                             table += "<td>"+result[idx][key]+"</td>";
-                        }
+                        } 
+                        else if (key!="is_deleted"){
+                            table += "<td>"+result[idx][key]+"</td>";
+                        };
+
                     });
                         
                     table+=`<td>
@@ -251,10 +262,13 @@
                         </div>
                     </td></tr>`;
                 });
+                console.log(catlist_html);
+                // build table end
 
                 table+="</tbody>";
+                $("#catlist").html(catlist_html);
                 $( "#table" ).html( table );
-                $("#table").show(250);
+                $( "#table" ).show(250);
             }
         );
         $("#table").show(250);

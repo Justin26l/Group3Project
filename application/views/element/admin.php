@@ -126,6 +126,7 @@
             },
         });
     }
+    
     function getTable(){
         $("#admin_form,#table").hide();
         $("#table").show(250);

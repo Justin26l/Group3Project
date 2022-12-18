@@ -31,12 +31,14 @@ class Mod_ctrl extends CI_Controller
 		$this->load->library('session');
 		if($this->session->has_userdata('mod')){
 			$this->load->model("Admin_model");
+			$this->load->model("About_model");
 
 			$session = $this->session->userdata('mod');
 			$admin = $this->Admin_model->read(['admin_id'=>$session['admin_id']])[0];
+			$about=$this->About_model->readOne();
 			// print_r($admin);exit;
 			$this->load->view('head',['title'=>'dashboard']);
-			$this->load->view('dashboard',['admin'=>$admin]);
+			$this->load->view('dashboard',['admin'=>$admin,'about'=>$about]);
 		}else{
 			header('Location: '.base_url('?x=Session Expired.'));
 		}
@@ -49,7 +51,6 @@ class Mod_ctrl extends CI_Controller
 			$this->load->model("Admin_model");
 			$session = $this->session->userdata('mod');
 			$admin = $this->Admin_model->read(['admin_id'=>$session['admin_id']])[0];
-			$dat = ['admin'=>$admin];
 
 			switch($path){
 				case"booking":
