@@ -233,6 +233,7 @@
         order = {
             is_dine : 1,
             pickup_time : null,
+            order_branch : "<?=$admin['branch']?>",
             order_by: "",
             items   : [],
             paid   : "cash",
@@ -346,6 +347,7 @@
             recieptView += '<tr class="py-4"><td>('+yy.i+')</td><td class="px-2">'+yy.n+'</td><td class="px-2">'+yy.p+'</td><td class="px-2">x'+yy.q+'</td><td class="px-2">'+yy.s+'</td></tr>';
         })
         order.total = parseFloat(order.total.toFixed(2));
+        order.order_branch = "<?=$admin['branch']?>";
         recieptView += '<tr class="py-3 text-end"><td colspan="100%"><span>total : </span><h1 class="d-inline">'+order.total+'</h1></td></tr></table> <div class="d-grid gap-2 col-6 mx-auto"><button class="btn btn-primary" onclick="orderCreate()">Create Order</button></div>';
         
         // output
