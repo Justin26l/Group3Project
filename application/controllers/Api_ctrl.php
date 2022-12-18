@@ -197,7 +197,7 @@ class Api_ctrl extends CI_Controller {
 							throw new Exception("error"); 
 						};
 
-						//chack token
+						//check token
 
 						if(isset($this->post['token']) && $this->post['token'] == $this->AppSecret ){
 							unset($this->post['token']);

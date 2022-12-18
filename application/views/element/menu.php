@@ -67,8 +67,7 @@
     <div class="form-floating mb-3">
         <input type="text" class="form-control" id="ed_category" autocomplete="off" list="catlist">
         <label for="ed_category">Category</label>
-        <datalist id="catlist">
-        </datalist>
+        <datalist id="catlist"></datalist>
     </div>
     <div class="form-floating mb-3">
         <input type="text" class="form-control" id="ed_prod_name">

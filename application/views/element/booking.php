@@ -10,12 +10,17 @@
     <option value=500>500 row</option>
     <option value=750>750 row</option>
     <option value=1000>1000 row</option>
-    <option value=1000>2000 row</option>
 </select>
 
 <select id="sortby" class="form-select-sm">
     <option value="DESC">Newest Order</option>
     <option value="ASC">Oldest Order</option>
+</select>
+
+<select id="status" class="form-select-sm">
+    <option value="">All</option>
+    <option value="accept">Accept</option>
+    <option value="denied">Denied</option>
 </select>
 
 <button type="button" class="btn btn-sm btn-primary" onclick="getTable()">
@@ -59,13 +64,16 @@
                 else{getTable();}
             },
         });
-    }
+    };
+
     function getTable(){
         $("#table").html(loader);
-        let sort      = $("#sortby").val();
+        let limit     = "&limit=" + $("#limit").val() ;
+        let stat      = $("#status").val()=="" ? "" : "&status=" + $("#status").val();
+        let sort      = "&order=created_time " + $("#sortby").val();
         let startdate = parseInt((new Date($("#date").val())).getTime() /1000);
         let enddate   = startdate+86400;
-        let Request   = "created_time>="+(startdate+tzoffset)+"&created_time<="+(enddate+tzoffset)+"&limit="+$("#limit").val()+"&order=created_time "+sort;
+        let Request   = "created_time>="+(startdate+tzoffset)+"&created_time<="+(enddate+tzoffset)+stat+sort+limit;
 
         $.ajax({
             url : "<?=base_url("api/read/booking?".($admin['superadmin']==0 ? "book_branch=".intval($admin['branch'])."&" : ""))?>"+Request, 
@@ -117,11 +125,11 @@
                 $( "#table" ).html( "Request Error !" );
             }
         });
-    }
+    };
 
     $(document).ready(function(){
         document.querySelector("#date").value = new Date(Date.now()-tzoffset* 1000).toISOString().slice(0, 10);
         getTable();
         $("#date, #limit, #sortby").change(()=>{getTable()});
-    })
+    });
 </script>

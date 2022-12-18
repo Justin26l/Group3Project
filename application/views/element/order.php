@@ -18,6 +18,12 @@
     <option value="ASC">Oldest Order</option>
 </select>
 
+<select id="status" class="form-select-sm">
+    <option value="">All</option>
+    <option value="closed">Closed</option>
+    <option value="pending">Pending</option>
+</select>
+
 <button type="button" class="btn btn-sm btn-primary" onclick="getTable()()">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
@@ -119,6 +125,7 @@
     };
 
     function orderCreate(){
+        console.log(order);
         $.ajax({
             type: "POST",
             url: "<?=base_url("api/create/order")?>",
@@ -143,10 +150,11 @@
     function getTable(){
         hideAll_order();
         $("#table").show().html(loader);
-        let sort      = $("#sortby").val();
+        let stat      = $("#status").val()=="" ? "" : "&status=" + $("#status").val();
+        let sort      = "&order=created_time " + $("#sortby").val();
         let startdate = parseInt((new Date($("#date").val())).getTime() /1000);
         let enddate   = startdate+86400;
-        let Request   = "created_time>="+(startdate+tzoffset)+"&created_time<="+(enddate+tzoffset)+"&limit="+$("#limit").val()+"&order=created_time "+sort;
+        let Request   = "created_time>="+(startdate+tzoffset)+"&created_time<="+(enddate+tzoffset)+"&limit="+$("#limit").val()+sort +stat;
 
         $.ajax({
             url : "<?= base_url("api/read/order?".($admin['superadmin']!=1 ? "order_branch=".intval($admin['branch'])."&" : ""))?>"+Request, 
@@ -227,6 +235,7 @@
             pickup_time : null,
             order_by: "",
             items   : [],
+            paid   : "cash",
             total   : 0,
         };
     }
@@ -237,7 +246,6 @@
         $('#deliInfo').hide('fast');
         $('#dineInfo').show('fast');
         order.is_dine = 1;
-        order.address = null;
         order.order_by= null;
     }
 
@@ -278,6 +286,9 @@
         $("#MenuItem, #MenuCat").html("");
         menuList = {};
         cart = {};
+
+        let stat = $("#status").val()=="" ? "" : "&status=" + $("#status").val();
+
         $.get(
             "<?=base_url("api/read/menu")?>",
             (data)=>{
